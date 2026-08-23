@@ -175,6 +175,8 @@ function renderEventDetail(e, i) {
   const parts = [authorsArr.join(', '), venueText].filter(Boolean).join(' — ');
   const bodyHtml = renderPortableText((e.text && e.text.ru) || []);
   const additionalHtml = renderPortableText((e.additionalText && e.additionalText.ru) || []);
+  const textLabel = L(e.textTitle, lang) || 'Текст';
+  const additionalLabel = L(e.additionalTextTitle, lang) || 'Дополнительный текст';
 
   return `
     <div class="archive-detail-block" data-uid="${i}">
@@ -187,8 +189,14 @@ function renderEventDetail(e, i) {
           </div>
         </div>
       </div>
-      ${bodyHtml ? `<div class="archive-detail-body">${bodyHtml}</div>` : ''}
-      ${additionalHtml ? `<div class="content-additional-text">${additionalHtml}</div>` : ''}
+      ${bodyHtml ? `
+        <div class="content-panel-header">${escapeHtml(textLabel)}</div>
+        <div class="archive-detail-body">${bodyHtml}</div>
+      ` : ''}
+      ${additionalHtml ? `
+        <div class="content-panel-header">${escapeHtml(additionalLabel)}</div>
+        <div class="content-additional-text">${additionalHtml}</div>
+      ` : ''}
     </div>
   `;
 }
@@ -213,7 +221,9 @@ async function fetchEvents() {
     "slug": slug.current,
     "venue": venue->title,
     "authors": authors[]->name,
+    textTitle,
     text{ru[]{ ..., markDefs[]{...} }},
+    additionalTextTitle,
     additionalText{ru[]{ ..., markDefs[]{...} }}
   }`);
   const url = `https://${SANITY_PROJECT_ID}.apicdn.sanity.io/v2024-01-01/data/query/${SANITY_DATASET}?query=${query}`;
