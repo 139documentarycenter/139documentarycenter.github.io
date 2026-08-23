@@ -177,6 +177,11 @@ function renderEventDetail(e, i) {
   const additionalHtml = renderPortableText((e.additionalText && e.additionalText.ru) || []);
   const textLabel = L(e.textTitle, lang) || 'Текст';
   const additionalLabel = L(e.additionalTextTitle, lang) || 'Дополнительный текст';
+  const galleryNamesHtml = (e.galleryNames || [])
+    .map((n) => L(n, lang))
+    .filter(Boolean)
+    .map((n) => `<div class="content-image-count"><span class="content-gallery-name">${escapeHtml(n)}</span></div>`)
+    .join('');
 
   return `
     <div class="archive-detail-block" data-uid="${i}">
@@ -197,6 +202,7 @@ function renderEventDetail(e, i) {
         <div class="content-panel-header">${escapeHtml(additionalLabel)}</div>
         <div class="content-additional-text">${additionalHtml}</div>
       ` : ''}
+      ${galleryNamesHtml}
     </div>
   `;
 }
@@ -224,7 +230,8 @@ async function fetchEvents() {
     textTitle,
     text{ru[]{ ..., markDefs[]{...} }},
     additionalTextTitle,
-    additionalText{ru[]{ ..., markDefs[]{...} }}
+    additionalText{ru[]{ ..., markDefs[]{...} }},
+    "galleryNames": galleries[].name
   }`);
   const url = `https://${SANITY_PROJECT_ID}.apicdn.sanity.io/v2024-01-01/data/query/${SANITY_DATASET}?query=${query}`;
   const res = await fetch(url);
