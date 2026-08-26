@@ -259,7 +259,36 @@ async function main() {
   fs.writeFileSync(INDEX_HTML_PATH, homeHtml);
   console.log('index.html updated with prerendered archive list.');
 
-  // 2. One static page per event: archive/<slug>/index.html.
+  // 2. archive/index.html - without this, a static host falls back to a
+  // raw directory listing for anyone visiting /archive/ directly instead
+  // of picking a specific event (Python's dev server does this too).
+  // Shows the archive list as the visible section (matching what the
+  // client shows at this route) instead of the landing page's About text.
+  let archiveIndexHtml = homeHtml;
+  archiveIndexHtml = replaceBetweenMarkers(
+    archiveIndexHtml,
+    'TITLE',
+    '<title>Архив — 139 Documentary Center</title>'
+  );
+  archiveIndexHtml = replaceBetweenMarkers(
+    archiveIndexHtml,
+    'DESCRIPTION',
+    '<meta name="description" content="Архив событий 139 Documentary Center.">'
+  );
+  archiveIndexHtml = archiveIndexHtml.replace(
+    '<div class="archive" id="archiveView">',
+    '<div class="archive visible" id="archiveView">'
+  );
+  archiveIndexHtml = archiveIndexHtml.replace(
+    '<div class="archive-category-label" id="archiveCategoryLabel"></div>',
+    '<div class="archive-category-label" id="archiveCategoryLabel">Архив</div>'
+  );
+  const archiveIndexDir = path.join(ROOT_DIR, 'archive');
+  fs.mkdirSync(archiveIndexDir, { recursive: true });
+  fs.writeFileSync(path.join(archiveIndexDir, 'index.html'), archiveIndexHtml);
+  console.log('Wrote archive/index.html.');
+
+  // 3. One static page per event: archive/<slug>/index.html.
   const archiveDetailPlaceholder =
     '<div class="content-container" id="archiveDetail">\n' +
     '          <div class="archive-detail-placeholder">Select an event to view details.</div>\n' +

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SSG:TITLE:START --><title>Женщины нашей махалли — 139 Documentary Center</title><!-- SSG:TITLE:END -->
   <!-- SSG:DESCRIPTION:START --><meta name="description" content="Женщины нашей махалли — 139 Documentary Center"><!-- SSG:DESCRIPTION:END -->
+  <link rel="preload" href="/fonts/UniversLTCYR-55Roman.otf" as="font" type="font/otf" crossorigin>
   <!-- Hyphenopoly disabled for now
   <script src="https://cdn.jsdelivr.net/npm/hyphenopoly@5/Hyphenopoly_Loader.js"></script>
   <script>
@@ -33,6 +34,44 @@
   </script>
   -->
   <style>
+    @font-face {
+      font-family: 'Univers';
+      /* Absolute path - a relative one breaks on nested routes like
+         /archive/<slug>/, resolving to the wrong location and silently
+         falling back to Arial there. LTCYR variant, not the plain one -
+         it has the Cyrillic glyphs the Russian site content needs. */
+      src: url('/fonts/UniversLTCYR-65Bold.otf') format('opentype');
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Univers';
+      /* Real oblique face instead of the browser faking italics by
+         skewing the roman glyphs. */
+      src: url('/fonts/UniversLTCYR-65BoldOblique.otf') format('opentype');
+      font-weight: bold;
+      font-style: italic;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Univers';
+      src: url('/fonts/UniversLTCYR-55Roman.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Univers';
+      src: url('/fonts/UniversLTCYR-55Oblique.otf') format('opentype');
+      font-weight: normal;
+      font-style: italic;
+      font-display: swap;
+    }
+
     :root {
       --page-padding-top: 8px;
       --page-padding-right: 10px;
@@ -44,6 +83,10 @@
       --archive-list-title-font-size: 22px;
       --archive-list-date-font-size: 16px;
       --archive-list-author-font-size: 13px;
+      --archive-list-number-font-size: 18px;
+      --event-text-line-height: var(--site-line-height);
+      --content-panel-header-font-size: var(--archive-text-font-size);
+      --event-text-letter-spacing: var(--site-letter-spacing);
       --gallery-title-font-size-desktop: 18px;
       --gallery-title-font-size-mobile: 18px;
       --gallery-image-gap: 21px;
@@ -56,6 +99,7 @@
       --site-line-height: 1.3;
       --nav-content-gap: calc(var(--site-line-height) * 1em);
       --site-letter-spacing: 1px;
+      --site-bg: #ffffff;
       --site-color: #000000;
       --color-about: #000000;
       --color-archive: #000000;
@@ -79,8 +123,10 @@
 
     body {
       min-height: 100vh;
-      background: #fff;
-      font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
+      background: var(--site-bg);
+      font-family: 'Univers', Arial, sans-serif;
+      font-weight: normal;
+      -webkit-text-stroke: 0.4px currentColor;
       font-size: var(--site-font-size);
       line-height: var(--site-line-height);
       letter-spacing: var(--site-letter-spacing);
@@ -92,7 +138,7 @@
     .layout {
       display: flex;
       flex-direction: column;
-      width: 100vw;
+      width: 100%;
     }
 
     .ver2-section {
@@ -106,6 +152,7 @@
       display: flex;
       flex-direction: column;
       width: 100%;
+      container-type: inline-size;
     }
 
     .ver2-nav-bar {
@@ -133,7 +180,7 @@
       font-size: var(--nav-font-size);
       line-height: var(--site-line-height);
       text-align: center;
-      margin-bottom: calc(var(--site-line-height) * 1em);
+      margin-bottom: 0;
     }
 
     .ver2-nav-dropdown-toggle {
@@ -150,18 +197,18 @@
 
     .ver2-nav-bar.open .nav-static {
       display: flex;
-      /* Anchored to the bottom edge of .ver2-nav-bar itself (top: 100%) so
-         it starts exactly where the logo's real rendered box ends, plus
-         the same --nav-content-gap used below the logo on the real page -
+      /* Anchored to the bottom edge of .ver2-nav-bar itself (top: 100%) -
          no measuring or guessing the logo's height needed, the box model
-         already knows it. */
+         already knows it. Used to add --nav-content-gap on top of that to
+         match the gap that used to sit below the logo on the real page,
+         but that gap was zeroed out, so the overlay's offset must match. */
       position: absolute;
-      top: calc(100% + var(--nav-content-gap));
+      top: 100%;
       left: 50%;
       transform: translateX(-50%);
       width: 100vw;
       min-height: 100vh;
-      background: #ffffff;
+      background: var(--site-bg);
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
@@ -187,6 +234,7 @@
       margin: 0;
       cursor: pointer;
       font-family: inherit;
+      font-weight: inherit;
       color: var(--color-menu);
       opacity: 0.4;
       font-size: var(--nav-font-size);
@@ -195,12 +243,30 @@
 
     .ver2-nav-burger:hover {
       opacity: 1;
-      color: #000000;
+      color: var(--color-menu);
     }
 
     .ver2-detail-full {
       width: 100%;
       padding-bottom: var(--page-padding-bottom);
+    }
+
+    /* The bottom padding above sits outside .content-container's own box,
+       so its background (the black/white theme switch) didn't reach it,
+       leaving a white sliver below black content. Only color it while an
+       event is actually open, so this doesn't tint the page when nothing
+       is showing (the theme choice persists globally once picked). */
+    .ver2-detail-full:has(.content-container.visible) {
+      background: var(--bg-event);
+      /* .ver2-section (the page's outer wrapper) has its own separate
+         page-padding-bottom, sitting below this element and uncolored -
+         extend this box past its normal flow position, into that trailing
+         padding, so the color reaches the true bottom of the page instead
+         of leaving that strip white. Padding grows the colored box; the
+         equal negative margin cancels the resulting extra layout height
+         so nothing shifts, just the color reaches further. */
+      padding-bottom: calc(var(--page-padding-bottom) * 2);
+      margin-bottom: calc(-1 * var(--page-padding-bottom));
     }
 
     .ver2-hero-about {
@@ -214,7 +280,8 @@
     .ver2-hero-about.visible {
       display: flex;
       flex-direction: row;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      justify-content: center;
     }
 
     /* Debug visualization: every spacing gap introduced this session is a
@@ -241,13 +308,54 @@
     }
 
     .ver2-hero-about-col {
-      flex: 0 0 70ch;
+      /* Shrinkable (unlike a rigid 0 0 basis) so the column narrows
+         smoothly to fit whatever width is actually available instead of
+         relying solely on the container-query breakpoint below to avoid
+         overflow - the ch unit's real px width depends on font choice and
+         has changed multiple times, so a fixed pixel breakpoint alone
+         isn't reliable protection against overflow. */
+      flex: 0 1 70ch;
       max-width: 70ch;
       min-width: 0;
+      overflow-wrap: break-word;
     }
 
     .about-gap-spacer ~ .ver2-hero-about-col {
       padding-left: calc(var(--page-padding-left) / 2);
+    }
+
+    /* The two fixed-70ch About columns need ~1281px to sit side by side at
+       the current font settings (measured live: 2 * 622.7px column + 16px
+       spacer + page padding). flex-wrap:nowrap above keeps them from ever
+       auto-wrapping on their own into that half-broken "second column
+       shifted right, no divider" in-between state - this container query
+       is the ONLY place that switches them to an explicit stacked column
+       layout, at a threshold comfortably past that requirement. Scoped to
+       just the About section (not the site's general ~700px mobile
+       breakpoint) so it reacts to the actual space available here. Must
+       stay AFTER the base rules above: with equal selector specificity,
+       the later declaration wins regardless of the @container condition. */
+    @container (max-width: 1350px) {
+      .ver2-hero-about.visible {
+        flex-direction: column;
+      }
+
+      .ver2-hero-about-col {
+        flex-basis: auto;
+        max-width: 100%;
+      }
+
+      .about-gap-spacer ~ .ver2-hero-about-col {
+        padding-left: 0;
+      }
+
+      .about-gap-spacer {
+        flex-basis: 1em;
+        align-self: auto;
+        width: auto;
+        margin-left: calc(-1 * var(--page-padding-left));
+        margin-right: calc(-1 * var(--page-padding-right));
+      }
     }
 
     .ver2-hero-about p {
@@ -261,11 +369,17 @@
     .ver2-wordmark {
       display: inline-block;
       text-decoration: none;
-      color: #000000;
+      color: var(--color-menu);
       cursor: pointer;
       font-size: var(--nav-font-size);
       line-height: var(--site-line-height);
       text-align: center;
+    }
+
+    /* One line on desktop; the mobile breakpoint below restores the break
+       so "Center" drops to its own line there. */
+    .wordmark-break {
+      display: none;
     }
 
     .archive-close {
@@ -292,7 +406,7 @@
       gap: 0;
       width: 100%;
       padding-top: 2px;
-      margin: calc(var(--site-line-height) * 2em) var(--page-padding-right) calc(var(--site-line-height) * 1em) 0;
+      margin: 0 var(--page-padding-right) 0 0;
     }
 
     .archive-detail-header .detail-close {
@@ -347,6 +461,7 @@
       background: var(--bg-event);
       padding: 0 var(--page-padding-right) 0 var(--page-padding-left);
       gap: 0;
+      container-type: inline-size;
     }
 
     .content-container.visible {
@@ -363,7 +478,7 @@
       gap: 20px;
       width: 100%;
       min-height: 1.4em;
-      margin-bottom: calc(var(--site-line-height) * 1em);
+      margin-bottom: 0;
     }
 
     .archive-detail-tabs {
@@ -372,7 +487,7 @@
       align-items: center;
       gap: 10px;
       width: fit-content;
-      padding: 4px 12px;
+      padding: 7px 12px 4px 12px;
       border: 1px solid var(--event-text-dim);
       font-size: var(--archive-tabs-font-size);
       line-height: var(--site-line-height);
@@ -387,7 +502,7 @@
     }
 
     .archive-detail-tab.active {
-      color: var(--event-text-color);
+      color: var(--event-text-dim);
     }
 
     .archive-detail-radio {
@@ -399,6 +514,7 @@
       border: 1px solid currentColor;
       box-sizing: border-box;
       position: relative;
+      top: -0.1em;
     }
 
     .archive-detail-bg-tabs {
@@ -439,31 +555,25 @@
       right: 0.2em;
       bottom: 0.2em;
       border-radius: 50%;
-      background: var(--event-text-color);
+      background: var(--event-text-dim);
     }
 
-    /* Both panels are stacked in the same grid cell (rather than one being
-       display:none) so the container's height always equals the taller of
-       the two - switching tabs can't shrink the page and clamp/jump the
-       scroll position, with no JS measurement needed. */
+    /* Only the active panel is in the box (display:none for the other),
+       so the container's height always matches whatever's actually
+       showing - no permanent empty space under short text just because
+       the image gallery happens to be taller. Switching tabs scrolls the
+       switch into view (see wireEventDetailBlocks) instead of reserving
+       height, so there's no scroll-jump either. */
     .archive-detail-columns {
-      display: grid;
       width: 100%;
     }
 
-    .archive-detail-columns .content-media-col,
-    .archive-detail-columns .content-text-row {
-      grid-area: 1 / 1;
-    }
-
     .archive-detail-columns[data-active-tab="images"] .content-text-row {
-      visibility: hidden;
-      pointer-events: none;
+      display: none;
     }
 
     .archive-detail-columns[data-active-tab="text"] .content-media-col {
-      visibility: hidden;
-      pointer-events: none;
+      display: none;
     }
 
     .content-media-col {
@@ -529,7 +639,7 @@
       width: 100%;
       height: var(--gallery-horizontal-image-height);
       object-fit: contain;
-      object-position: left top;
+      object-position: center top;
     }
 
     .content-gallery-horizontal-img.active {
@@ -539,7 +649,8 @@
     .content-gallery-horizontal-hit {
       position: absolute;
       top: 0;
-      left: 0;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
     .content-image-count {
@@ -562,7 +673,7 @@
       text-align: left;
       display: grid;
       grid-template-columns: 130px 1fr;
-      column-gap: 10px;
+      column-gap: 30px;
       align-items: start;
     }
 
@@ -570,7 +681,8 @@
       padding-top: 0;
       padding-bottom: 3px;
       margin: 0;
-      font-size: var(--archive-text-font-size);
+      text-align: right;
+      font-size: var(--content-panel-header-font-size);
       color: var(--event-text-color);
     }
 
@@ -581,20 +693,55 @@
 
     .content-text-row {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      justify-content: center;
       width: 100%;
       background: var(--bg-event-text);
     }
 
-    .content-text-row .gap-spacer-breakout {
-      height: 1em;
-    }
-
     .content-text-row .accordion-panel {
       box-sizing: border-box;
+      flex: 0 1 75ch;
+      min-width: 0;
       width: auto;
-      max-width: 100%;
+      max-width: 75ch;
+      overflow-wrap: break-word;
+    }
+
+    .content-text-row .gap-spacer-breakout {
+      flex: 0 0 20px;
+      align-self: stretch;
+      height: auto;
+    }
+
+    /* Curatorial text and author's text sit side by side as two whole,
+       separate columns (each with its own label) on desktop - not one
+       text auto-flowing across columns. Stack them, divider included,
+       once the container can't fit both at up to 75ch each. Must stay
+       AFTER the base rules above: with equal specificity, the later
+       declaration wins regardless of the @container condition. */
+    @container (max-width: 1350px) {
+      .content-text-row {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .content-text-row .accordion-panel {
+        flex-basis: auto;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .content-text-row .gap-spacer-breakout {
+        flex-basis: 1em;
+        align-self: auto;
+        width: auto;
+        height: 1em;
+        margin-left: calc(-1 * var(--page-padding-left));
+        margin-right: calc(-1 * var(--page-padding-right));
+      }
     }
 
     svg {
@@ -622,7 +769,7 @@
     .nav-static a:hover {
       text-decoration: none;
       opacity: 1;
-      color: #000000;
+      color: var(--color-menu);
     }
 
     .nav-language-group {
@@ -643,12 +790,12 @@
 
     .nav-language-group a:hover {
       opacity: 1;
-      color: #000000;
+      color: var(--color-menu);
     }
 
     .nav-language-group a.active {
       opacity: 1;
-      color: #000000;
+      color: var(--color-menu);
     }
 
     .archive {
@@ -665,6 +812,10 @@
 
     @media (max-width: 700px) {
 
+      .wordmark-break {
+        display: initial;
+      }
+
       .ver2-nav-burger {
         align-self: flex-start;
       }
@@ -680,11 +831,11 @@
       }
 
       .archive-detail-switches:has(.archive-detail-tabs[data-active-tab="images"]) {
-        margin-bottom: calc(var(--site-line-height) * 1em);
+        margin-bottom: 0;
       }
 
       .archive-detail-header {
-        margin-bottom: calc(var(--site-line-height) * 1em);
+        margin-bottom: 0;
       }
 
       .ver2-hero-about.visible {
@@ -694,6 +845,10 @@
       .ver2-hero-about-col {
         flex-basis: auto;
         max-width: 100%;
+      }
+
+      .about-gap-spacer ~ .ver2-hero-about-col {
+        padding-left: 0;
       }
 
       .content-text-col {
@@ -741,7 +896,11 @@
 
     #archiveList {
       display: block;
+      /* column-width sets a floor and column-count a ceiling - the
+         browser picks however many columns actually fit (up to 2),
+         narrowing to 1 automatically as the viewport shrinks. */
       column-count: 2;
+      column-width: 260px;
       column-gap: 2em;
       width: 100%;
       font-size: var(--archive-list-font-size);
@@ -759,8 +918,16 @@
       break-inside: avoid;
     }
 
+    /* CSS multi-column has no selector for "first item in each column" -
+       JS (markColumnFirstItems) detects which items land at the top of a
+       column and tags them with this class. */
+    #archiveList .archive-item.col-first {
+      padding-top: 0;
+    }
+
     #archiveList .archive-item .archive-number {
       flex: 0 0 3ch;
+      font-size: var(--archive-list-number-font-size);
     }
 
     .archive-info {
@@ -781,11 +948,7 @@
       right: 0;
       bottom: 0;
       height: 1px;
-      background: #000000;
-    }
-
-    #archiveList .archive-item:last-child::after {
-      display: none;
+      background: var(--color-archive);
     }
 
     #archiveList .archive-item:hover::before {
@@ -842,7 +1005,7 @@
         white-space: normal;
       }
 
-      #archiveList .archive-item .archive-authors-short {
+      #archiveList .archive-item .archive-authors.has-more .archive-authors-short {
         display: none;
       }
 
@@ -884,13 +1047,16 @@
     }
 
     .archive-item.active:hover {
-      color: #000000;
+      color: var(--color-archive);
     }
 
     .archive-detail-body {
       color: var(--event-text-color);
       max-width: 75ch;
       font-size: var(--archive-text-font-size);
+      line-height: var(--event-text-line-height);
+      letter-spacing: var(--event-text-letter-spacing);
+      overflow-wrap: break-word;
     }
 
     .content-additional-text {
@@ -900,7 +1066,10 @@
       min-width: 0;
       margin-top: 0;
       text-align: left;
+      overflow-wrap: break-word;
       font-size: var(--archive-text-font-size);
+      line-height: var(--event-text-line-height);
+      letter-spacing: var(--event-text-letter-spacing);
     }
 
     .archive-detail-body p,
@@ -1177,6 +1346,7 @@
       line-height: var(--site-line-height);
       text-align: left;
     }
+
   </style>
 </head>
 <body>
@@ -1184,7 +1354,7 @@
     <div class="ver2-section" id="ver2Section">
       <div class="ver2-nav-bar" id="ver2NavBar">
         <div class="ver2-nav-top-row">
-          <a href="#" class="ver2-wordmark" id="ver2Wordmark">139 Documentary<br>Center</a>
+          <a href="#" class="ver2-wordmark" id="ver2Wordmark">139 Documentary <br class="wordmark-break">Center</a>
           <button type="button" class="ver2-nav-burger" id="navBurgerToggle" aria-label="Menu" data-i18n="menu">Меню</button>
         </div>
         <div class="nav-static" id="navStaticVer2">
@@ -1194,7 +1364,7 @@
           <div class="nav-language-group" id="navLanguageGroup"></div>
         </div>
       </div>
-      <div class="gap-spacer" data-gap="nav-about" style="height: var(--nav-content-gap);"></div>
+      <div class="gap-spacer" data-gap="nav-about" style="height: 0;"></div>
       <div class="ver2-top-screen">
         <div class="ver2-hero-about" id="ver2HeroAbout"></div>
       </div>
@@ -1385,7 +1555,7 @@
           </div>
         </div>
       </div>
-      <div class="gap-spacer" data-gap="list-detail" style="height: calc(var(--site-line-height) * 1em);"></div>
+      <div class="gap-spacer" data-gap="list-detail" style="height: 0;"></div>
       <div class="ver2-detail-full" id="ver2DetailFull">
         <div class="content-container visible" id="archiveDetail">
           
@@ -1421,15 +1591,59 @@
   </div>
 
   <div class="dev-panel" id="devPanel">
-    <h4>Font sizes</h4>
+    <h4>General</h4>
     <label>
       <span><span>Text size (px)</span><span id="siteFontSizeVal">18</span></span>
       <input type="range" id="siteFontSize" min="10" max="36" step="1" value="18">
     </label>
     <label>
-      <span><span>Archive text size (px)</span><span id="archiveTextFontSizeVal">18</span></span>
-      <input type="range" id="archiveTextFontSize" min="10" max="36" step="1" value="18">
+      <span><span>Line height</span><span id="siteLineHeightVal">1.30</span></span>
+      <input type="range" id="siteLineHeight" min="0.9" max="2" step="0.05" value="1.3">
     </label>
+    <label>
+      <span><span>Letter spacing (px)</span><span id="siteLetterSpacingVal">1.00</span></span>
+      <input type="range" id="siteLetterSpacing" min="-1" max="4" step="0.05" value="1">
+    </label>
+    <label>
+      <span><span>Page padding top (px)</span><span id="pagePaddingTopVal">8</span></span>
+      <input type="range" id="pagePaddingTop" min="0" max="60" step="1" value="8">
+    </label>
+    <label>
+      <span><span>Page padding right (px)</span><span id="pagePaddingRightVal">10</span></span>
+      <input type="range" id="pagePaddingRight" min="0" max="60" step="1" value="10">
+    </label>
+    <label>
+      <span><span>Page padding bottom (px)</span><span id="pagePaddingBottomVal">10</span></span>
+      <input type="range" id="pagePaddingBottom" min="0" max="60" step="1" value="10">
+    </label>
+    <label>
+      <span><span>Page padding left (px)</span><span id="pagePaddingLeftVal">10</span></span>
+      <input type="range" id="pagePaddingLeft" min="0" max="60" step="1" value="10">
+    </label>
+    <label>
+      <span><span>Color</span><input type="text" class="dev-panel-hex" id="siteColorVal" value="#000000"></span>
+      <input type="color" id="siteColor" value="#000000">
+    </label>
+    <label>
+      <span><span>About color</span><input type="text" class="dev-panel-hex" id="colorAboutVal" value="#000000"></span>
+      <input type="color" id="colorAbout" value="#000000">
+    </label>
+    <label>
+      <span><span>About bg</span><input type="text" class="dev-panel-hex" id="bgAboutVal" value="#ffffff"></span>
+      <input type="color" id="bgAbout" value="#ffffff">
+    </label>
+
+    <h4>Nav</h4>
+    <label>
+      <span><span>Nav text size (px)</span><span id="navFontSizeVal">18</span></span>
+      <input type="range" id="navFontSize" min="10" max="36" step="1" value="18">
+    </label>
+    <label>
+      <span><span>Menu color</span><input type="text" class="dev-panel-hex" id="colorMenuVal" value="#000000"></span>
+      <input type="color" id="colorMenu" value="#000000">
+    </label>
+
+    <h4>Archive list</h4>
     <label>
       <span><span>Archive list text size (px)</span><span id="archiveListFontSizeVal">18</span></span>
       <input type="range" id="archiveListFontSize" min="10" max="36" step="1" value="18">
@@ -1447,6 +1661,40 @@
       <input type="range" id="archiveListAuthorFontSize" min="8" max="48" step="1" value="13">
     </label>
     <label>
+      <span><span>Archive list number size (px)</span><span id="archiveListNumberFontSizeVal">18</span></span>
+      <input type="range" id="archiveListNumberFontSize" min="8" max="48" step="1" value="18">
+    </label>
+    <label>
+      <span><span>Archive color</span><input type="text" class="dev-panel-hex" id="colorArchiveVal" value="#000000"></span>
+      <input type="color" id="colorArchive" value="#000000">
+    </label>
+    <label>
+      <span><span>Archive bg</span><input type="text" class="dev-panel-hex" id="bgArchiveVal" value="#ffffff"></span>
+      <input type="color" id="bgArchive" value="#ffffff">
+    </label>
+
+    <h4>Event</h4>
+    <label>
+      <span><span>Archive text size (px)</span><span id="archiveTextFontSizeVal">18</span></span>
+      <input type="range" id="archiveTextFontSize" min="10" max="36" step="1" value="18">
+    </label>
+    <label>
+      <span><span>Text line height</span><span id="eventTextLineHeightVal">1.30</span></span>
+      <input type="range" id="eventTextLineHeight" min="0.9" max="2" step="0.05" value="1.3">
+    </label>
+    <label>
+      <span><span>Text letter spacing (px)</span><span id="eventTextLetterSpacingVal">1.00</span></span>
+      <input type="range" id="eventTextLetterSpacing" min="-1" max="4" step="0.05" value="1">
+    </label>
+    <label>
+      <span><span>Text label size (px)</span><span id="contentPanelHeaderFontSizeVal">18</span></span>
+      <input type="range" id="contentPanelHeaderFontSize" min="8" max="48" step="1" value="18">
+    </label>
+    <label>
+      <span><span>Text/Images switch + Close size (px)</span><span id="archiveTabsFontSizeVal">18</span></span>
+      <input type="range" id="archiveTabsFontSize" min="10" max="36" step="1" value="18">
+    </label>
+    <label>
       <span><span>Gallery title size desktop (px)</span><span id="galleryTitleFontSizeDesktopVal">18</span></span>
       <input type="range" id="galleryTitleFontSizeDesktop" min="10" max="36" step="1" value="18">
     </label>
@@ -1454,44 +1702,6 @@
       <span><span>Gallery title size mobile (px)</span><span id="galleryTitleFontSizeMobileVal">18</span></span>
       <input type="range" id="galleryTitleFontSizeMobile" min="10" max="36" step="1" value="18">
     </label>
-    <label>
-      <span><span>Nav text size (px)</span><span id="navFontSizeVal">18</span></span>
-      <input type="range" id="navFontSize" min="10" max="36" step="1" value="18">
-    </label>
-    <label>
-      <span><span>Text/Images switch + Close size (px)</span><span id="archiveTabsFontSizeVal">18</span></span>
-      <input type="range" id="archiveTabsFontSize" min="10" max="36" step="1" value="18">
-    </label>
-
-    <h4>Line &amp; spacing</h4>
-    <label>
-      <span><span>Line height</span><span id="siteLineHeightVal">1.30</span></span>
-      <input type="range" id="siteLineHeight" min="0.9" max="2" step="0.05" value="1.3">
-    </label>
-    <label>
-      <span><span>Letter spacing (px)</span><span id="siteLetterSpacingVal">1.00</span></span>
-      <input type="range" id="siteLetterSpacing" min="-1" max="4" step="0.05" value="1">
-    </label>
-
-    <h4>Page padding</h4>
-    <label>
-      <span><span>Page padding top (px)</span><span id="pagePaddingTopVal">8</span></span>
-      <input type="range" id="pagePaddingTop" min="0" max="60" step="1" value="8">
-    </label>
-    <label>
-      <span><span>Page padding right (px)</span><span id="pagePaddingRightVal">10</span></span>
-      <input type="range" id="pagePaddingRight" min="0" max="60" step="1" value="10">
-    </label>
-    <label>
-      <span><span>Page padding bottom (px)</span><span id="pagePaddingBottomVal">10</span></span>
-      <input type="range" id="pagePaddingBottom" min="0" max="60" step="1" value="10">
-    </label>
-    <label>
-      <span><span>Page padding left (px)</span><span id="pagePaddingLeftVal">10</span></span>
-      <input type="range" id="pagePaddingLeft" min="0" max="60" step="1" value="10">
-    </label>
-
-    <h4>Gallery layout</h4>
     <label>
       <span><span>Gallery image gap (px)</span><span id="galleryImageGapVal">21</span></span>
       <input type="range" id="galleryImageGap" min="0" max="60" step="1" value="21">
@@ -1512,20 +1722,6 @@
       <span><span>Gallery horizontal image height (vh)</span><span id="galleryHorizontalImageHeightVal">50</span></span>
       <input type="range" id="galleryHorizontalImageHeight" min="10" max="100" step="1" value="50">
     </label>
-
-    <h4>Colors</h4>
-    <label>
-      <span><span>Color</span><input type="text" class="dev-panel-hex" id="siteColorVal" value="#000000"></span>
-      <input type="color" id="siteColor" value="#000000">
-    </label>
-    <label>
-      <span><span>About color</span><input type="text" class="dev-panel-hex" id="colorAboutVal" value="#000000"></span>
-      <input type="color" id="colorAbout" value="#000000">
-    </label>
-    <label>
-      <span><span>Archive color</span><input type="text" class="dev-panel-hex" id="colorArchiveVal" value="#000000"></span>
-      <input type="color" id="colorArchive" value="#000000">
-    </label>
     <label>
       <span><span>Event title color</span><input type="text" class="dev-panel-hex" id="colorEventTitleVal" value="#000000"></span>
       <input type="color" id="colorEventTitle" value="#000000">
@@ -1533,18 +1729,6 @@
     <label>
       <span><span>Event text color</span><input type="text" class="dev-panel-hex" id="colorEventTextVal" value="#000000"></span>
       <input type="color" id="colorEventText" value="#000000">
-    </label>
-    <label>
-      <span><span>Menu color</span><input type="text" class="dev-panel-hex" id="colorMenuVal" value="#000000"></span>
-      <input type="color" id="colorMenu" value="#000000">
-    </label>
-    <label>
-      <span><span>About bg</span><input type="text" class="dev-panel-hex" id="bgAboutVal" value="#ffffff"></span>
-      <input type="color" id="bgAbout" value="#ffffff">
-    </label>
-    <label>
-      <span><span>Archive bg</span><input type="text" class="dev-panel-hex" id="bgArchiveVal" value="#ffffff"></span>
-      <input type="color" id="bgArchive" value="#ffffff">
     </label>
     <label>
       <span><span>Event bg</span><input type="text" class="dev-panel-hex" id="bgEventVal" value="#ffffff"></span>
@@ -1558,18 +1742,16 @@
       <span><span>Event text bg</span><input type="text" class="dev-panel-hex" id="bgEventTextVal" value="#ffffff"></span>
       <input type="color" id="bgEventText" value="#ffffff">
     </label>
-
-    <h4>Hyphenation (reloads on release)</h4>
     <label>
-      <span><span>Min word length</span><span id="hyphMinWordLengthVal">4</span></span>
+      <span><span>Hyphenation min word length</span><span id="hyphMinWordLengthVal">4</span></span>
       <input type="range" id="hyphMinWordLength" min="3" max="10" step="1" value="4">
     </label>
     <label>
-      <span><span>Left min</span><span id="hyphLeftminVal">2</span></span>
+      <span><span>Hyphenation left min</span><span id="hyphLeftminVal">2</span></span>
       <input type="range" id="hyphLeftmin" min="0" max="4" step="1" value="2">
     </label>
     <label>
-      <span><span>Right min</span><span id="hyphRightminVal">2</span></span>
+      <span><span>Hyphenation right min</span><span id="hyphRightminVal">2</span></span>
       <input type="range" id="hyphRightmin" min="0" max="4" step="1" value="2">
     </label>
 
@@ -1608,6 +1790,7 @@
       archiveView.classList.remove('visible');
       archiveDetail.classList.remove('visible');
       navigate('ver2');
+      setMenuOpen(false);
     });
     const archiveLoading = document.getElementById('archiveLoading');
     const archiveList = document.getElementById('archiveList');
@@ -1635,6 +1818,13 @@
 
     function applyEventBgTheme() {
       const theme = EVENT_BG_THEMES[eventBgTheme];
+      // Site-wide: the whole page (nav, About, archive list, menu overlay)
+      // flips with the switch, not just the open event's own content.
+      document.documentElement.style.setProperty('--site-bg', theme.bg);
+      document.documentElement.style.setProperty('--site-color', theme.text);
+      document.documentElement.style.setProperty('--color-menu', theme.text);
+      document.documentElement.style.setProperty('--color-archive', theme.text);
+      document.documentElement.style.setProperty('--color-about', theme.text);
       document.documentElement.style.setProperty('--bg-event', theme.bg);
       document.documentElement.style.setProperty('--bg-event-gallery', theme.bg);
       document.documentElement.style.setProperty('--bg-event-text', theme.bg);
@@ -1925,7 +2115,25 @@
           selectEvent(Number(el.dataset.index));
         });
       });
+
+      markColumnFirstItems();
     }
+
+    // With CSS multi-column, the browser (not markup order) decides which
+    // items start a new column, so it can't be targeted with a plain CSS
+    // selector - detect it by comparing each item's top position to the
+    // list's own top instead.
+    function markColumnFirstItems() {
+      const items = archiveList.querySelectorAll('.archive-item');
+      if (!items.length) return;
+      const containerTop = archiveList.getBoundingClientRect().top;
+      items.forEach((item) => {
+        const isColumnFirst = Math.abs(item.getBoundingClientRect().top - containerTop) < 1;
+        item.classList.toggle('col-first', isColumnFirst);
+      });
+    }
+
+    window.addEventListener('resize', markColumnFirstItems);
 
     function openEventBySlug(slug, { updateUrl } = {}) {
       const idx = archiveEvents.findIndex((e) => e.slug === slug);
@@ -2084,6 +2292,11 @@
           columns.dataset.activeTab = tabName;
           tabs.dataset.activeTab = tabName;
           if (bgTabs) bgTabs.style.display = tabName === 'images' ? '' : 'none';
+          if (tabName === 'images') {
+            columns.querySelectorAll('.content-gallery-horizontal').forEach((wrap) => {
+              if (wrap._fitCurrentImage) wrap._fitCurrentImage();
+            });
+          }
         };
 
         labels.forEach((label) => {
@@ -2131,8 +2344,8 @@
         // object-fit:contain can letterbox (image smaller than its box)
         // when the photo's aspect ratio doesn't match the fixed height —
         // size the click-through nav overlay to the exact rendered photo
-        // (anchored top-left, matching object-position:left top), not the
-        // full box, so it never covers empty letterbox space.
+        // (centered, matching object-position:center top), not the full
+        // box, so it never covers empty letterbox space.
         const fitHitToImage = (img) => {
           if (!hit) return;
           const apply = () => {
@@ -2150,7 +2363,20 @@
           else img.addEventListener('load', apply, { once: true });
         };
 
+        // Exposed so switching the Text/Images tab can re-fit directly -
+        // relying on ResizeObserver alone isn't reliable enough for "this
+        // element just went from display:none to visible" in every
+        // browser/timing scenario.
+        wrap._fitCurrentImage = () => {
+          const current = Number(wrap.dataset.currentIndex) || 0;
+          fitHitToImage(imgs[current]);
+        };
+
         fitHitToImage(imgs[0]);
+
+        // Re-fit whenever the gallery's rendered size actually changes -
+        // covers window resizes and dev-panel font-size changes too.
+        new ResizeObserver(() => wrap._fitCurrentImage()).observe(wrap);
 
         const step = (delta) => {
           const current = Number(wrap.dataset.currentIndex) || 0;
@@ -2563,6 +2789,22 @@
       archiveListAuthorFontSizeVal.textContent = archiveListAuthorFontSize.value;
     });
 
+    const archiveListNumberFontSize = document.getElementById('archiveListNumberFontSize');
+    const archiveListNumberFontSizeVal = document.getElementById('archiveListNumberFontSizeVal');
+
+    archiveListNumberFontSize.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--archive-list-number-font-size', `${archiveListNumberFontSize.value}px`);
+      archiveListNumberFontSizeVal.textContent = archiveListNumberFontSize.value;
+    });
+
+    const contentPanelHeaderFontSize = document.getElementById('contentPanelHeaderFontSize');
+    const contentPanelHeaderFontSizeVal = document.getElementById('contentPanelHeaderFontSizeVal');
+
+    contentPanelHeaderFontSize.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--content-panel-header-font-size', `${contentPanelHeaderFontSize.value}px`);
+      contentPanelHeaderFontSizeVal.textContent = contentPanelHeaderFontSize.value;
+    });
+
     const galleryTitleFontSizeDesktop = document.getElementById('galleryTitleFontSizeDesktop');
     const galleryTitleFontSizeDesktopVal = document.getElementById('galleryTitleFontSizeDesktopVal');
 
@@ -2622,6 +2864,22 @@
     siteLineHeight.addEventListener('input', () => {
       document.documentElement.style.setProperty('--site-line-height', siteLineHeight.value);
       siteLineHeightVal.textContent = Number(siteLineHeight.value).toFixed(2);
+    });
+
+    const eventTextLineHeight = document.getElementById('eventTextLineHeight');
+    const eventTextLineHeightVal = document.getElementById('eventTextLineHeightVal');
+
+    eventTextLineHeight.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--event-text-line-height', eventTextLineHeight.value);
+      eventTextLineHeightVal.textContent = Number(eventTextLineHeight.value).toFixed(2);
+    });
+
+    const eventTextLetterSpacing = document.getElementById('eventTextLetterSpacing');
+    const eventTextLetterSpacingVal = document.getElementById('eventTextLetterSpacingVal');
+
+    eventTextLetterSpacing.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--event-text-letter-spacing', `${eventTextLetterSpacing.value}px`);
+      eventTextLetterSpacingVal.textContent = Number(eventTextLetterSpacing.value).toFixed(2);
     });
 
     siteLetterSpacing.addEventListener('input', () => {
@@ -2719,6 +2977,8 @@
 - Archive list title size: ${archiveListTitleFontSize.value}px
 - Archive list date size: ${archiveListDateFontSize.value}px
 - Archive list author size: ${archiveListAuthorFontSize.value}px
+- Archive list number size: ${archiveListNumberFontSize.value}px
+- Text label size: ${contentPanelHeaderFontSize.value}px
 - Gallery title size desktop: ${galleryTitleFontSizeDesktop.value}px
 - Gallery title size mobile: ${galleryTitleFontSizeMobile.value}px
 - Gallery image gap: ${galleryImageGap.value}px
@@ -2727,6 +2987,8 @@
 - Gallery image height: ${galleryImageHeight.value}vh
 - Gallery horizontal image height: ${galleryHorizontalImageHeight.value}vh
 - Line height: ${siteLineHeight.value}
+- Event text line height: ${eventTextLineHeight.value}
+- Event text letter spacing: ${eventTextLetterSpacing.value}px
 - Letter spacing: ${siteLetterSpacing.value}px
 - Page padding top: ${document.getElementById('pagePaddingTop').value}px
 - Page padding right: ${document.getElementById('pagePaddingRight').value}px
@@ -2751,7 +3013,7 @@
 
     // --- Persist typography settings in this browser ---
     const TYPOGRAPHY_STORAGE_KEY = 'typographySettings';
-    const SLIDER_IDS = ['siteFontSize', 'archiveTextFontSize', 'archiveListFontSize', 'archiveListTitleFontSize', 'archiveListDateFontSize', 'archiveListAuthorFontSize', 'galleryTitleFontSizeDesktop', 'galleryTitleFontSizeMobile', 'galleryImageGap', 'galleryRowGap', 'galleryBlockGap', 'galleryImageHeight', 'galleryHorizontalImageHeight', 'siteLineHeight', 'siteLetterSpacing', 'pagePaddingTop', 'pagePaddingRight', 'pagePaddingBottom', 'pagePaddingLeft', 'navFontSize', 'archiveTabsFontSize', 'siteColor', 'colorAbout', 'colorArchive', 'colorEventTitle', 'colorEventText', 'colorMenu', 'bgAbout', 'bgArchive', 'bgEvent', 'bgEventGallery', 'bgEventText', 'hyphMinWordLength', 'hyphLeftmin', 'hyphRightmin'];
+    const SLIDER_IDS = ['siteFontSize', 'archiveTextFontSize', 'archiveListFontSize', 'archiveListTitleFontSize', 'archiveListDateFontSize', 'archiveListAuthorFontSize', 'archiveListNumberFontSize', 'contentPanelHeaderFontSize', 'galleryTitleFontSizeDesktop', 'galleryTitleFontSizeMobile', 'galleryImageGap', 'galleryRowGap', 'galleryBlockGap', 'galleryImageHeight', 'galleryHorizontalImageHeight', 'siteLineHeight', 'eventTextLineHeight', 'eventTextLetterSpacing', 'siteLetterSpacing', 'pagePaddingTop', 'pagePaddingRight', 'pagePaddingBottom', 'pagePaddingLeft', 'navFontSize', 'archiveTabsFontSize', 'siteColor', 'colorAbout', 'colorArchive', 'colorEventTitle', 'colorEventText', 'colorMenu', 'bgAbout', 'bgArchive', 'bgEvent', 'bgEventGallery', 'bgEventText', 'hyphMinWordLength', 'hyphLeftmin', 'hyphRightmin'];
 
     function collectSettings() {
       const settings = {};
