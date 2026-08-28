@@ -84,14 +84,35 @@
       --archive-list-date-font-size: 16px;
       --archive-list-author-font-size: 13px;
       --archive-list-number-font-size: 18px;
+      --space-archive-item-top: 1em;
+      --space-archive-item-bottom: 1em;
+      --space-archive-item-left: 1em;
+      --space-archive-number-info: 1em;
+      --space-archive-column-gap: 1em;
+      --space-archive-category-list: 1em;
+      --space-event-list-header: 1em;
+      --space-event-header-filter: 1em;
+      --space-event-filter-content: 1em;
+      --space-event-label-text: 1em;
+      --space-event-label-stack: 1em;
+      --space-event-text-columns: 1.5em;
+      --space-gallery-image: 1em;
+      --space-gallery-row: 1em;
+      --space-gallery-block: 1em;
+      --gallery-column-height: 90vh;
+      --weight-body: bold;
+      --weight-archive-list: normal;
+      --weight-nav: bold;
+      --weight-event-title: bold;
+      --weight-event-label: bold;
+      --weight-event-body: bold;
+      --weight-gallery-caption: bold;
+      --archive-column-count: 3;
       --event-text-line-height: var(--site-line-height);
       --content-panel-header-font-size: var(--archive-text-font-size);
       --event-text-letter-spacing: var(--site-letter-spacing);
       --gallery-title-font-size-desktop: 18px;
       --gallery-title-font-size-mobile: 18px;
-      --gallery-image-gap: 21px;
-      --gallery-row-gap: 21px;
-      --gallery-block-gap: 21px;
       --gallery-image-height: 25vh;
       --gallery-horizontal-image-height: 50vh;
       --nav-font-size: 18px;
@@ -125,8 +146,7 @@
       min-height: 100vh;
       background: var(--site-bg);
       font-family: 'Univers', Arial, sans-serif;
-      font-weight: normal;
-      -webkit-text-stroke: 0.4px currentColor;
+      font-weight: var(--weight-body);
       font-size: var(--site-font-size);
       line-height: var(--site-line-height);
       letter-spacing: var(--site-letter-spacing);
@@ -164,6 +184,7 @@
       gap: 0;
       margin: 0 var(--page-padding-right) 0 var(--page-padding-left);
       flex: 0 0 auto;
+      font-weight: var(--weight-nav);
     }
 
     .ver2-nav-top-row {
@@ -219,8 +240,8 @@
     }
 
     .ver2-nav-bar.open .nav-static .nav-language-group {
-      position: absolute;
-      top: 50%;
+      position: fixed;
+      top: 35%;
       left: 50%;
       transform: translate(-50%, -50%);
     }
@@ -423,6 +444,7 @@
       align-items: center;
       text-align: center;
       width: 100%;
+      font-weight: var(--weight-event-title);
     }
 
     .archive-detail-identity-row .archive-item {
@@ -502,7 +524,7 @@
     }
 
     .archive-detail-tab.active {
-      color: var(--event-text-dim);
+      color: var(--event-text-color);
     }
 
     .archive-detail-radio {
@@ -555,7 +577,7 @@
       right: 0.2em;
       bottom: 0.2em;
       border-radius: 50%;
-      background: var(--event-text-dim);
+      background: currentColor;
     }
 
     /* Only the active panel is in the box (display:none for the other),
@@ -580,7 +602,12 @@
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      row-gap: var(--gallery-block-gap);
+      /* Block gap is a real marker element between gallery blocks now (see
+         .gap-spacer-square[data-gap="gallery-block"]), not this row-gap -
+         every block is width:100% so they never actually share a row and
+         column-gap never triggers, but keep it for the (currently unused)
+         side-by-side case. */
+      row-gap: 0;
       column-gap: var(--page-padding-right);
       background: var(--bg-event-gallery);
       width: 100%;
@@ -607,10 +634,23 @@
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content: flex-start;
-      row-gap: var(--gallery-row-gap);
-      column-gap: var(--gallery-image-gap);
+      justify-content: center;
+      /* Both real marker elements now (image gap: .gallery-item-wrap's
+         trailing gap-spacer-square; row gap: a flex-basis:100% "row break"
+         marker inserted by JS wherever markGalleryRows() detects a wrap,
+         since which images wrap to a new row can't be known until after
+         layout - same fundamental issue as the archive list's multi-column
+         "first item per column" problem). */
+      row-gap: 0;
+      column-gap: 0;
       width: 100%;
+    }
+
+    .gallery-item-wrap {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      flex: 0 0 auto;
     }
 
     .content-gallery-strip-item {
@@ -634,6 +674,28 @@
       width: 100%;
     }
 
+    /* One image directly under the next, centered, each at its own fixed
+       height (--gallery-column-height) with width following the image's
+       own aspect ratio - same sizing model as the strip type's items, just
+       stacked in a column instead of a wrapping row, and with its own
+       independent height value. Reuses .content-gallery-strip-item's img
+       rule (height:100%; width:auto; object-fit:contain) via the shared
+       class on the item - only the item's own height is overridden here. */
+    .content-gallery-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .content-gallery-column-item {
+      height: var(--gallery-column-height);
+    }
+
+    .content-gallery-column-item:not(:last-child) {
+      margin-bottom: var(--space-gallery-row);
+    }
+
     .content-gallery-horizontal-img {
       display: none;
       width: 100%;
@@ -653,17 +715,48 @@
       transform: translateX(-50%);
     }
 
-    .content-image-count {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 8px;
-      margin-top: 0;
+    /* Per-photo caption/credit shown on hover instead of one permanent
+       gallery name below the whole block - falls back to the gallery name
+       (baked in at render time) when a photo has no caption of its own.
+       Touch devices have no hover, so it's always visible there instead. */
+    .content-gallery-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      padding: 4px 8px 4px 0;
+      box-sizing: border-box;
+      color: var(--event-text-color);
+      font-weight: var(--weight-gallery-caption);
+      font-size: var(--gallery-title-font-size-desktop);
+      opacity: 0;
+      pointer-events: none;
+      white-space: normal;
+      z-index: 2;
     }
 
-    .content-gallery-name {
-      color: var(--event-text-color);
-      font-size: var(--gallery-title-font-size-desktop);
+    /* photoHorizontal images can render narrower than their container
+       (object-fit:contain letterboxing), so unlike the strip caption's
+       left:0/right:0 (which already matches its item's own width), this
+       one is centered and JS-sized to the actual rendered image width
+       (see fitHitToImage). */
+    .content-gallery-horizontal [data-horizontal-caption] {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      padding-left: 8px;
+      text-align: center;
+    }
+
+    .content-gallery-strip-item:hover .content-gallery-caption,
+    .content-gallery-horizontal:hover .content-gallery-caption {
+      opacity: 1;
+    }
+
+    @media (max-width: 700px) {
+      .content-gallery-caption {
+        opacity: 1;
+      }
     }
 
     .content-text-col {
@@ -672,18 +765,43 @@
       margin-top: 0;
       text-align: left;
       display: grid;
-      grid-template-columns: 130px 1fr;
-      column-gap: 30px;
+      /* Middle track is the real marker element's own column - its width
+         IS the label-to-text gap, not a decorative overlay on top of a
+         separate column-gap. First track defaults to auto (sized to its
+         own label) but syncLabelWidths sets --content-label-width on the
+         shared ancestor .content-text-row once both labels are known, so
+         the two independent grids (one per text panel) end up with the
+         same label column width regardless of which label is longer -
+         inherited here since custom properties cascade to descendants. */
+      grid-template-columns: var(--content-label-width, auto) var(--space-event-label-text) 1fr;
+      column-gap: 0;
       align-items: start;
+    }
+
+    .content-text-col .gap-spacer-square {
+      align-self: stretch;
+      width: 100%;
+      height: auto;
     }
 
     .content-panel-header {
       padding-top: 0;
       padding-bottom: 3px;
       margin: 0;
-      text-align: right;
+      text-align: left;
+      font-weight: var(--weight-event-label);
       font-size: var(--content-panel-header-font-size);
       color: var(--event-text-color);
+      /* Each label sits in the same grid row as its own (possibly very
+         long) text, so that row is already as tall as the text - giving
+         the label room to stick at the top while its own column scrolls
+         underneath, panel by panel. Still works with the two panels always
+         stacked full-column-then-full-column, since this is scoped to
+         each panel's own internal grid, independent of that. Reset to
+         static on mobile below, where the label sits above its text
+         instead of beside it (no shared-height row to stick within). */
+      position: sticky;
+      top: var(--page-padding-top);
     }
 
     .content-panel-header + .archive-detail-body,
@@ -691,57 +809,62 @@
       margin-top: 0;
     }
 
+    /* Curatorial text and author's text always stack, one full column
+       under the other (not side by side) - simpler than juggling sticky
+       labels and truncation for very uneven text lengths. */
     .content-text-row {
       display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: flex-start;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       width: 100%;
       background: var(--bg-event-text);
     }
 
-    .content-text-row .accordion-panel {
-      box-sizing: border-box;
-      flex: 0 1 75ch;
-      min-width: 0;
+    /* Comparison toggle only (see the Columns dev panel) - side by side
+       instead of the default full-column-then-full-column stack. */
+    body.event-text-2col .content-text-row {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    body.event-text-2col .content-text-row .accordion-panel {
+      flex: 1 1 0;
       width: auto;
-      max-width: 75ch;
-      overflow-wrap: break-word;
     }
 
-    .content-text-row .gap-spacer-breakout {
-      flex: 0 0 20px;
-      align-self: stretch;
-      height: auto;
-    }
-
-    /* Curatorial text and author's text sit side by side as two whole,
-       separate columns (each with its own label) on desktop - not one
-       text auto-flowing across columns. Stack them, divider included,
-       once the container can't fit both at up to 75ch each. Must stay
-       AFTER the base rules above: with equal specificity, the later
-       declaration wins regardless of the @container condition. */
-    @container (max-width: 1350px) {
-      .content-text-row {
+    /* Side by side gets cramped below this - fall back to 1 column on
+       smaller desktop/laptop widths too, not just the mobile breakpoint. */
+    @media (max-width: 1200px) {
+      body.event-text-2col .content-text-row {
         flex-direction: column;
         align-items: center;
       }
 
-      .content-text-row .accordion-panel {
-        flex-basis: auto;
+      body.event-text-2col .content-text-row .accordion-panel {
+        flex: initial;
         width: 100%;
-        max-width: 100%;
       }
+    }
 
-      .content-text-row .gap-spacer-breakout {
-        flex-basis: 1em;
-        align-self: auto;
-        width: auto;
-        height: 1em;
-        margin-left: calc(-1 * var(--page-padding-left));
-        margin-right: calc(-1 * var(--page-padding-right));
-      }
+    .content-text-row .accordion-panel {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 85ch;
+      overflow-wrap: break-word;
+    }
+
+    .content-text-row .gap-spacer-square--breakout {
+      flex-basis: var(--space-event-text-columns);
+      width: auto;
+      align-self: stretch;
+      height: var(--space-event-text-columns);
+      background: yellow;
+      margin-left: calc(-1 * var(--page-padding-left));
+      margin-right: calc(-1 * var(--page-padding-right));
+    }
+
+    .gap-spacer-square--breakout .gap-spacer-square-label {
+      color: #000;
     }
 
     svg {
@@ -812,6 +935,10 @@
 
     @media (max-width: 700px) {
 
+      :root {
+        --page-padding-bottom: 1.25em;
+      }
+
       .wordmark-break {
         display: initial;
       }
@@ -855,11 +982,44 @@
         display: block;
       }
 
+      /* The Columns dev panel's side-by-side comparison toggle is
+         desktop-only - mobile always stacks to 1 column regardless of
+         that setting, same as it always has. */
+      body.event-text-2col .content-text-row {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      body.event-text-2col .content-text-row .accordion-panel {
+        flex: initial;
+        width: 100%;
+      }
+
       .content-panel-header {
         width: 100%;
         text-align: center;
-        margin-top: calc(2 * var(--site-line-height) * 1em);
-        margin-bottom: calc(2 * var(--site-line-height) * 1em);
+        margin: 0;
+        position: static;
+      }
+
+      /* The label-to-text gap is a real grid column on desktop (see
+         .content-text-col's grid-template-columns) - its own width IS
+         that gap. Stacking to display:block here collapses that column
+         concept, so the marker needs an explicit height to still be the
+         real vertical gap instead of disappearing. */
+      .content-text-col .gap-spacer-square {
+        width: 100%;
+        height: var(--space-event-label-text);
+      }
+
+      /* This one has no desktop equivalent - it's purely the space above
+         the label once it's stacked above its own text instead of sitting
+         beside it, so it's display:none outside this media query (see
+         base rule) to stay out of the desktop grid's column placement. */
+      .gap-spacer-square[data-gap="label-stack"] {
+        display: block;
+        width: 100%;
+        height: var(--space-event-label-stack);
       }
 
       .about-gap-spacer {
@@ -873,6 +1033,26 @@
 
       .content-gallery-strip {
         flex-direction: column;
+        /* Without this, flex-wrap:wrap (inherited from the row layout)
+           combines with the row-break markers' flex-basis:100% below in a
+           bad way: 100% now resolves along the *height* axis instead of
+           width, so each marker balloons to a huge height and the whole
+           strip wraps into multiple side-by-side columns instead of one
+           clean vertical stack - exactly the "weirdly large gaps" bug. */
+        flex-wrap: nowrap;
+      }
+
+      /* Column stacking has no "row" to force a break into - every image
+         is already its own row - so this only needs its own real height
+         now, not the flex-basis:100% trick that forces a row wrap.
+         Extra specificity (two classes) is required here, not just the
+         media query, since the unguarded base .gap-spacer-square--row-break
+         rule below comes later in source order and would otherwise win
+         at equal specificity regardless of this media query matching. */
+      .content-gallery-strip .gap-spacer-square--row-break {
+        flex-basis: auto;
+        width: 100%;
+        height: var(--space-gallery-row);
       }
 
       .content-gallery-strip-item {
@@ -885,7 +1065,7 @@
         height: auto;
       }
 
-      .content-gallery-name {
+      .content-gallery-caption {
         font-size: var(--gallery-title-font-size-mobile);
       }
     }
@@ -896,37 +1076,235 @@
 
     #archiveList {
       display: block;
+      font-weight: var(--weight-archive-list);
       /* column-width sets a floor and column-count a ceiling - the
-         browser picks however many columns actually fit (up to 2),
-         narrowing to 1 automatically as the viewport shrinks. */
-      column-count: 2;
+         browser picks however many columns actually fit (up to this
+         count), narrowing down automatically as the viewport shrinks. */
+      column-count: var(--archive-column-count);
       column-width: 260px;
-      column-gap: 2em;
+      column-gap: var(--space-archive-column-gap);
       width: 100%;
       font-size: var(--archive-list-font-size);
+    }
+
+    /* Shrinks the whole list once an event is open, reverting the moment
+       it's closed (#archiveDetail loses .visible) - pure CSS, no JS state
+       to keep in sync since :has() reacts to the class directly. #archiveDetail
+       and #archiveList aren't in the same subtree (the detail view lives
+       under #ver2DetailFull, the list under #archiveView), so this has to
+       scope from body rather than a shared closer ancestor. Title/date/
+       author/number each carry their own independent font-size var (see
+       the dev panel controls for them), overriding whatever #archiveList
+       itself is set to - so this has to override each of those directly,
+       not just the shared parent. */
+    body:has(#archiveDetail.visible) #archiveList {
+      font-size: 16px;
+    }
+
+    body:has(#archiveDetail.visible) #archiveList .archive-item .archive-title,
+    body:has(#archiveDetail.visible) #archiveList .archive-item .archive-date,
+    body:has(#archiveDetail.visible) #archiveList .archive-item .archive-authors,
+    body:has(#archiveDetail.visible) #archiveList .archive-item .archive-number {
+      font-size: 16px;
+    }
+
+    /* Positioned relative to .archive-list-col (see below), NOT
+       #archiveList itself - Chrome positions absolutely-positioned
+       descendants of a multicol container relative to the column box
+       they'd land in, not the overall multicol box, so left:50% here
+       would center within column 1 instead of the whole list if this
+       stayed nested inside the multicol element. Doubled specificity
+       (two classes) so it reliably beats the base .gap-spacer-square
+       rule's background regardless of source order. */
+    .gap-spacer-square.gap-spacer-square--column-gap {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--space-archive-column-gap);
+      height: var(--space-archive-column-gap);
+      background: yellow;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .gap-spacer-square--column-gap .gap-spacer-square-label {
+      color: #000;
     }
 
     #archiveList .archive-item {
       position: relative;
       z-index: 0;
       display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+      padding: 0;
+      break-inside: avoid;
+    }
+
+    #archiveList .archive-item-row {
+      display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 1em;
+      gap: 0;
       width: 100%;
-      padding: calc(var(--site-line-height) * 0.5em) 0;
-      break-inside: avoid;
+    }
+
+    /* Debug visualization: every 1em spacing in this list (row top/bottom
+       padding, left padding before the number, number-to-info gap) is a
+       real 1em-square element instead of invisible padding/gap, so the
+       exact spacing value is visible while tuning it. The box itself
+       stays exactly 1em (so the real spacing is accurate) but the label
+       inside is absolutely positioned and overflows the box at a fixed,
+       readable size instead of being squeezed to fit inside a tiny 1em
+       square. Press "M" to hide all of them. */
+    .gap-spacer-square {
+      position: relative;
+      flex: 0 0 auto;
+      width: 1em;
+      height: 1em;
+      background: purple;
+      overflow: visible;
+    }
+
+    /* Each marker's own box size IS the real spacing it represents (not
+       just a label overlay), so these widths/heights are tied to the same
+       CSS vars the Spaces dev panel controls. */
+    .gap-spacer-square[data-gap="item-top"] {
+      width: var(--space-archive-item-top);
+      height: var(--space-archive-item-top);
+    }
+
+    .gap-spacer-square[data-gap="item-bottom"] {
+      width: var(--space-archive-item-bottom);
+      height: var(--space-archive-item-bottom);
+    }
+
+    .gap-spacer-square[data-gap="item-left"] {
+      width: var(--space-archive-item-left);
+      height: var(--space-archive-item-left);
+    }
+
+    .gap-spacer-square[data-gap="number-info"] {
+      width: var(--space-archive-number-info);
+      height: var(--space-archive-number-info);
+    }
+
+    /* Block-level markers (not flex items) for the event detail page's
+       section-to-section gaps, which sit in plain block flow rather than
+       inside a flex/grid container. */
+    .gap-spacer-square--block {
+      display: block;
+      width: 1em;
+      margin: 0 auto;
+      background: orangered;
+    }
+
+    .gap-spacer-square[data-gap="list-header"] {
+      height: var(--space-event-list-header);
+    }
+
+    .gap-spacer-square[data-gap="category-list"] {
+      height: var(--space-archive-category-list);
+    }
+
+    .gap-spacer-square[data-gap="header-filter"] {
+      height: var(--space-event-header-filter);
+    }
+
+    .gap-spacer-square[data-gap="filter-content"] {
+      height: var(--space-event-filter-content);
+    }
+
+    /* Only exists once the two text panels stack full-width on mobile -
+       display:none here keeps it out of the desktop grid's column
+       placement (see the mobile override in the max-width:700px block). */
+    .gap-spacer-square[data-gap="label-stack"] {
+      display: none;
+    }
+
+    .gap-spacer-square[data-gap="gallery-block"] {
+      height: var(--space-gallery-block);
+    }
+
+    /* Between images in the same gallery row - stays the default purple,
+       matching item-left/number-info/label-text (fine-grained horizontal
+       gaps), sized to the image height for visual consistency though only
+       its width is functionally the real spacing. */
+    .gap-spacer-square[data-gap="gallery-image"] {
+      width: var(--space-gallery-image);
+      height: var(--gallery-image-height);
+    }
+
+    /* Forces a flex-wrap line break at this point (well-known flexbox
+       trick: flex-basis:100% on a wrapped item pushes everything after it
+       onto a new line) - so this marker's own height IS the real row gap,
+       inserted by JS (markGalleryRows) wherever a wrap is detected, since
+       that can't be known until after layout. */
+    .gap-spacer-square--row-break {
+      flex: 0 0 100%;
+      width: 100%;
+      height: var(--space-gallery-row);
+      background: orangered;
+    }
+
+    @media (max-width: 700px) {
+      /* Gallery images stack in a single column on mobile (see
+         .content-gallery-strip flex-direction:column below) - there's no
+         "row" concept distinct from "image" there, so the row-break
+         markers alone provide all the stacking spacing and the image-gap
+         markers would just be redundant clutter next to each image. */
+      .gap-spacer-square[data-gap="gallery-image"] {
+        display: none;
+      }
+    }
+
+    /* Hide the marker itself (color + label), but keep its box intact -
+       this is real spacing now, not a decorative overlay, so display:none
+       here would collapse the actual layout space along with the mark.
+       CSS specificity compares ID *count* before class count, so a purely
+       class-based selector here can never outrank the #archiveList-scoped
+       marker rules below no matter how many classes it stacks - this has
+       to include #archiveList itself for those, plus a second branch for
+       the column-gap marker that lives outside #archiveList as a sibling. */
+    body.hide-gap-marks #archiveList .gap-spacer-square,
+    body.hide-gap-marks .archive-list-col > .gap-spacer-square,
+    body.hide-gap-marks .gap-spacer-square {
+      background: transparent;
+    }
+
+    body.hide-gap-marks .gap-spacer-square-label {
+      display: none;
+    }
+
+    #archiveList .archive-item > .gap-spacer-square {
+      align-self: center;
+      background: orangered;
+    }
+
+    #archiveList .archive-item > .gap-spacer-square[data-gap="item-bottom"] {
+      left: 1em;
+    }
+
+    .gap-spacer-square-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 10px;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     /* CSS multi-column has no selector for "first item in each column" -
        JS (markColumnFirstItems) detects which items land at the top of a
        column and tags them with this class. */
-    #archiveList .archive-item.col-first {
-      padding-top: 0;
-    }
 
     #archiveList .archive-item .archive-number {
-      flex: 0 0 3ch;
+      flex: 0 0 auto;
       font-size: var(--archive-list-number-font-size);
     }
 
@@ -951,6 +1329,14 @@
       background: var(--color-archive);
     }
 
+    /* CSS multi-column has no selector for "last item in each column"
+       either (see markColumnLastItems) - the last item of each column
+       shouldn't close it off with a line, matching how the first item
+       no longer opens it with one. */
+    #archiveList .archive-item.col-last::after {
+      display: none;
+    }
+
     #archiveList .archive-item:hover::before {
       content: '';
       position: absolute;
@@ -960,6 +1346,17 @@
       bottom: 0;
       background: #f0f0f0;
       z-index: -1;
+    }
+
+    /* The hover background is always light, regardless of the site's
+       black/white theme - in black-theme mode the text is a light grey
+       (var(--color-archive)) that'd otherwise stay light-on-light here,
+       so force it black to keep the hover state properly inverted. */
+    #archiveList .archive-item:hover .archive-title,
+    #archiveList .archive-item:hover .archive-date,
+    #archiveList .archive-item:hover .archive-authors,
+    #archiveList .archive-item:hover .archive-number {
+      color: #000;
     }
 
     #archiveList .archive-item .archive-title {
@@ -1052,7 +1449,8 @@
 
     .archive-detail-body {
       color: var(--event-text-color);
-      max-width: 75ch;
+      max-width: 85ch;
+      font-weight: var(--weight-event-body);
       font-size: var(--archive-text-font-size);
       line-height: var(--event-text-line-height);
       letter-spacing: var(--event-text-letter-spacing);
@@ -1062,11 +1460,12 @@
     .content-additional-text {
       color: var(--event-text-color);
       width: 100%;
-      max-width: 75ch;
+      max-width: 85ch;
       min-width: 0;
       margin-top: 0;
       text-align: left;
       overflow-wrap: break-word;
+      font-weight: var(--weight-event-body);
       font-size: var(--archive-text-font-size);
       line-height: var(--event-text-line-height);
       letter-spacing: var(--event-text-letter-spacing);
@@ -1084,7 +1483,7 @@
     .content-additional-text blockquote,
     .content-additional-text ul,
     .content-additional-text ol {
-      margin-bottom: 16px;
+      margin-bottom: 1em;
     }
 
     .archive-detail-body > :last-child,
@@ -1259,13 +1658,229 @@
       background: #000;
     }
 
+    /* Separate panel from .dev-panel (its own toggle key, own side of the
+       screen) so the two don't have to be open/closed together. */
+    .spaces-panel {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      bottom: 16px;
+      z-index: 100;
+      background: #e0e0e0;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+      width: 260px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #222;
+    }
+
+    .spaces-panel.visible {
+      display: block;
+    }
+
+    .spaces-panel h4 {
+      font-size: 12px;
+      margin-top: 16px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spaces-panel h4:first-child {
+      margin-top: 0;
+    }
+
+    .spaces-panel .spaces-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .spaces-panel .spaces-row-label {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .spaces-panel .spaces-stepper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .spaces-panel .spaces-stepper button {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #888;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .spaces-panel .spaces-stepper button:hover {
+      background: #ccc;
+    }
+
+    .spaces-panel .spaces-stepper-value {
+      width: 34px;
+      text-align: center;
+    }
+
+    .spaces-panel .dev-panel-hint {
+      color: #666;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    /* Own toggle key and own spot on screen, like .dev-panel/.spaces-panel,
+       so any combination of the three can be open at once. */
+    .weights-panel {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 292px;
+      bottom: 16px;
+      z-index: 100;
+      background: #fbd9e6;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+      width: 260px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #222;
+    }
+
+    .weights-panel.visible {
+      display: block;
+    }
+
+    .weights-panel h4 {
+      font-size: 12px;
+      margin-top: 16px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .weights-panel h4:first-child {
+      margin-top: 0;
+    }
+
+    /* Shared row/toggle-button structure, reused by any panel that wants
+       a labeled multi-choice toggle instead of the Spaces panel's +/-
+       stepper (see .columns-panel below) - only the hover/active colors
+       are scoped per panel so each keeps its own accent color. */
+    .weights-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .weights-row-label {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .weights-toggle {
+      display: flex;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .weights-toggle button {
+      border: 1px solid #888;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+      line-height: 1;
+      padding: 3px 6px;
+    }
+
+    .weights-panel .weights-toggle button:hover {
+      background: #f6b8d1;
+    }
+
+    .weights-panel .weights-toggle button.active {
+      background: #c2185b;
+      color: #fff;
+      border-color: #c2185b;
+    }
+
+    .weights-panel .dev-panel-hint,
+    .columns-panel .dev-panel-hint {
+      color: #666;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    /* Own toggle key and own spot on screen, like the other dev panels. */
+    .columns-panel {
+      display: none;
+      position: fixed;
+      top: 16px;
+      right: 292px;
+      bottom: 16px;
+      z-index: 100;
+      background: #fdf3b0;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+      width: 260px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #222;
+    }
+
+    .columns-panel.visible {
+      display: block;
+    }
+
+    .columns-panel h4 {
+      font-size: 12px;
+      margin-top: 16px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .columns-panel h4:first-child {
+      margin-top: 0;
+    }
+
+    .columns-panel .weights-toggle button:hover {
+      background: #f5e485;
+    }
+
+    .columns-panel .weights-toggle button.active {
+      background: #c9a227;
+      color: #fff;
+      border-color: #c9a227;
+    }
+
     .archive-body {
       position: relative;
       width: 100%;
     }
 
     .archive-list-col {
-      width: 65%;
+      position: relative;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -1349,7 +1964,7 @@
 
   </style>
 </head>
-<body>
+<body class="hide-gap-marks">
   <div class="layout">
     <div class="ver2-section" id="ver2Section">
       <div class="ver2-nav-bar" id="ver2NavBar">
@@ -1370,6 +1985,7 @@
       </div>
       <div class="archive" id="archiveView">
         <div class="archive-category-label" id="archiveCategoryLabel"></div>
+        <div class="gap-spacer-square gap-spacer-square--block" data-gap="category-list"><span class="gap-spacer-square-label">1</span></div>
         <div class="archive-body">
           <div class="archive-list-col">
             <div class="archive-header-labels" id="archiveHeaderLabels">
@@ -1380,182 +1996,267 @@
             <!-- SSG:LOADING:START --><div class="archive-loading" id="archiveLoading" style="display: none;">Loading…</div><!-- SSG:LOADING:END -->
             <div id="archiveList"><!-- SSG:ARCHIVE_LIST:START -->
     <a class="archive-item active" data-index="0" href="/archive/nedavno">
-      <div class="archive-number">1</div>
-      <div class="archive-info">
-        <div class="archive-title">Недавно</div>
-        <div class="archive-date">10 февраля 2020</div>
-        <div class="archive-authors has-more">
-          <span class="archive-authors-short">Умида Ахмедова, Вячеслав Ахунов, Юрий Веденин…</span>
-          
-            <span class="archive-authors-full">
-              <span>Умида Ахмедова, Вячеслав Ахунов, Юрий Веденин, Алексей Волосевич, Тимур Карпов</span>
-              <span>Умида Ахмедова, Вячеслав Ахунов, Юрий Веденин, Алексей Волосевич, Тимур Карпов</span>
-            </span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="1" href="/archive/vo-chto-ty-byla-odeta">
-      <div class="archive-number">2</div>
-      <div class="archive-info">
-        <div class="archive-title">Во что ты была одета</div>
-        <div class="archive-date">6 марта 2020</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Тимур Карпов</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="2" href="/archive/snap">
-      <div class="archive-number">3</div>
-      <div class="archive-info">
-        <div class="archive-title">СНАП</div>
-        <div class="archive-date">5 сентября 2020</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Умида Ахмедова</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active selected" data-index="3" href="/archive/domashnyaya-rabota">
-      <div class="archive-number">4</div>
-      <div class="archive-info">
-        <div class="archive-title">Домашняя работа</div>
-        <div class="archive-date">14 ноября 2020</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Хасан Курбанбаев</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="4" href="/archive/yunost">
-      <div class="archive-number">5</div>
-      <div class="archive-info">
-        <div class="archive-title">Юность</div>
-        <div class="archive-date">12 декабря 2020</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Тимур Карпов</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="5" href="/archive/zhenshchiny-nashey-makhalli">
-      <div class="archive-number">6</div>
-      <div class="archive-info">
-        <div class="archive-title">Женщины нашей махалли</div>
-        <div class="archive-date">8 марта 2021</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">София Сейтхалил</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="6" href="/archive/mustakillik">
-      <div class="archive-number">7</div>
-      <div class="archive-info">
-        <div class="archive-title">Мустакиллик</div>
-        <div class="archive-date">16 октября 2021</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Александр Шепелин</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="7" href="/archive/kultura-konfrontatsii">
-      <div class="archive-number">8</div>
-      <div class="archive-info">
-        <div class="archive-title">Культура Конфронтации</div>
-        <div class="archive-date">3 марта 2022</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Максим Дондюк</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="8" href="/archive/sarpa">
-      <div class="archive-number">9</div>
-      <div class="archive-info">
-        <div class="archive-title">Сарпа</div>
-        <div class="archive-date">12 марта 2022</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Вера Сухина, Умида Ахмедова</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="9" href="/archive/neuyat">
-      <div class="archive-number">10</div>
-      <div class="archive-info">
-        <div class="archive-title">Neuyat</div>
-        <div class="archive-date">11 ноября 2022</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Коллективная выставка</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="10" href="/archive/pakhta">
-      <div class="archive-number">11</div>
-      <div class="archive-info">
-        <div class="archive-title">Пахта</div>
-        <div class="archive-date">17 декабря 2022</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Коллективная выставка</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="11" href="/archive/vnutri-voyny">
-      <div class="archive-number">12</div>
-      <div class="archive-info">
-        <div class="archive-title">Внутри войны</div>
-        <div class="archive-date">26 августа 2023</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Коллективная выставка</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="12" href="/archive/missiya-nevypolnima">
-      <div class="archive-number">13</div>
-      <div class="archive-info">
-        <div class="archive-title">Миссия невыполнима</div>
-        <div class="archive-date">22 сентября 2023</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Умида Ахмедова, Зилола Саидова</span>
-          
-        </div>
-      </div>
-    </a>
-  
-    <a class="archive-item active" data-index="13" href="/archive/ziyayushchie-pustoty">
-      <div class="archive-number">14</div>
-      <div class="archive-info">
-        <div class="archive-title">Зияющие пустоты</div>
-        <div class="archive-date">30 марта 2024</div>
-        <div class="archive-authors">
-          <span class="archive-authors-short">Туркестанский Архив</span>
-          
-        </div>
-      </div>
-    </a>
-  <!-- SSG:ARCHIVE_LIST:END --></div>
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">1</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Недавно</div>
+          <div class="archive-date">10 февраля 2020</div>
+          <div class="archive-authors has-more">
+            <span class="archive-authors-short">Умида Ахмедова, Вячеслав Ахунов, Юрий Веденин…</span>
+            
+              <span class="archive-authors-full">
+                <span>Умида Ахмедова, Вячеслав Ахунов, Юрий Веденин, Алексей Волосевич, Тимур Карпов</span>
+                <span>Умида Ахмедова, Вячеслав Ахунов, Юрий Веденин, Алексей Волосевич, Тимур Карпов</span>
+              </span>
+            
           </div>
         </div>
       </div>
-      <div class="gap-spacer" data-gap="list-detail" style="height: 0;"></div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="1" href="/archive/vo-chto-ty-byla-odeta">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">2</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Во что ты была одета</div>
+          <div class="archive-date">6 марта 2020</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Тимур Карпов</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="2" href="/archive/snap">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">3</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">СНАП</div>
+          <div class="archive-date">5 сентября 2020</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Умида Ахмедова</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active selected" data-index="3" href="/archive/domashnyaya-rabota">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">4</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Домашняя работа</div>
+          <div class="archive-date">14 ноября 2020</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Хасан Курбанбаев</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="4" href="/archive/yunost">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">5</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Юность</div>
+          <div class="archive-date">12 декабря 2020</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Тимур Карпов</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="5" href="/archive/zhenshchiny-nashey-makhalli">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">6</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Женщины нашей махалли</div>
+          <div class="archive-date">8 марта 2021</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">София Сейтхалил</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="6" href="/archive/mustakillik">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">7</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Мустакиллик</div>
+          <div class="archive-date">16 октября 2021</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Александр Шепелин</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="7" href="/archive/kultura-konfrontatsii">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">8</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Культура Конфронтации</div>
+          <div class="archive-date">3 марта 2022</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Максим Дондюк</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="8" href="/archive/sarpa">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">9</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Сарпа</div>
+          <div class="archive-date">12 марта 2022</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Вера Сухина, Умида Ахмедова</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="9" href="/archive/neuyat">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">10</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Neuyat</div>
+          <div class="archive-date">11 ноября 2022</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Коллективная выставка</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="10" href="/archive/pakhta">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">11</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Пахта</div>
+          <div class="archive-date">17 декабря 2022</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Коллективная выставка</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="11" href="/archive/vnutri-voyny">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">12</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Внутри войны</div>
+          <div class="archive-date">26 августа 2023</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Коллективная выставка</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="12" href="/archive/missiya-nevypolnima">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">13</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Миссия невыполнима</div>
+          <div class="archive-date">22 сентября 2023</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Умида Ахмедова, Зилола Саидова</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  
+    <a class="archive-item active" data-index="13" href="/archive/ziyayushchie-pustoty">
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">14</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">Зияющие пустоты</div>
+          <div class="archive-date">30 марта 2024</div>
+          <div class="archive-authors">
+            <span class="archive-authors-short">Туркестанский Архив</span>
+            
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
+    </a>
+  <!-- SSG:ARCHIVE_LIST:END --></div>
+            <div class="gap-spacer-square gap-spacer-square--column-gap" data-gap="column-gap"><span class="gap-spacer-square-label">1</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="gap-spacer-square gap-spacer-square--block" data-gap="list-header"><span class="gap-spacer-square-label">1</span></div>
       <div class="ver2-detail-full" id="ver2DetailFull">
         <div class="content-container visible" id="archiveDetail">
           
@@ -1626,27 +2327,11 @@
       <span><span>Page padding left (px)</span><span id="pagePaddingLeftVal">10</span></span>
       <input type="range" id="pagePaddingLeft" min="0" max="60" step="1" value="10">
     </label>
-    <label>
-      <span><span>Color</span><input type="text" class="dev-panel-hex" id="siteColorVal" value="#000000"></span>
-      <input type="color" id="siteColor" value="#000000">
-    </label>
-    <label>
-      <span><span>About color</span><input type="text" class="dev-panel-hex" id="colorAboutVal" value="#000000"></span>
-      <input type="color" id="colorAbout" value="#000000">
-    </label>
-    <label>
-      <span><span>About bg</span><input type="text" class="dev-panel-hex" id="bgAboutVal" value="#ffffff"></span>
-      <input type="color" id="bgAbout" value="#ffffff">
-    </label>
 
     <h4>Nav</h4>
     <label>
       <span><span>Nav text size (px)</span><span id="navFontSizeVal">18</span></span>
       <input type="range" id="navFontSize" min="10" max="36" step="1" value="18">
-    </label>
-    <label>
-      <span><span>Menu color</span><input type="text" class="dev-panel-hex" id="colorMenuVal" value="#000000"></span>
-      <input type="color" id="colorMenu" value="#000000">
     </label>
 
     <h4>Archive list</h4>
@@ -1669,14 +2354,6 @@
     <label>
       <span><span>Archive list number size (px)</span><span id="archiveListNumberFontSizeVal">18</span></span>
       <input type="range" id="archiveListNumberFontSize" min="8" max="48" step="1" value="18">
-    </label>
-    <label>
-      <span><span>Archive color</span><input type="text" class="dev-panel-hex" id="colorArchiveVal" value="#000000"></span>
-      <input type="color" id="colorArchive" value="#000000">
-    </label>
-    <label>
-      <span><span>Archive bg</span><input type="text" class="dev-panel-hex" id="bgArchiveVal" value="#ffffff"></span>
-      <input type="color" id="bgArchive" value="#ffffff">
     </label>
 
     <h4>Event</h4>
@@ -1709,18 +2386,6 @@
       <input type="range" id="galleryTitleFontSizeMobile" min="10" max="36" step="1" value="18">
     </label>
     <label>
-      <span><span>Gallery image gap (px)</span><span id="galleryImageGapVal">21</span></span>
-      <input type="range" id="galleryImageGap" min="0" max="60" step="1" value="21">
-    </label>
-    <label>
-      <span><span>Gallery row gap (px)</span><span id="galleryRowGapVal">21</span></span>
-      <input type="range" id="galleryRowGap" min="0" max="60" step="1" value="21">
-    </label>
-    <label>
-      <span><span>Gallery block gap (px)</span><span id="galleryBlockGapVal">21</span></span>
-      <input type="range" id="galleryBlockGap" min="0" max="60" step="1" value="21">
-    </label>
-    <label>
       <span><span>Gallery image height (vh, desktop)</span><span id="galleryImageHeightVal">25</span></span>
       <input type="range" id="galleryImageHeight" min="5" max="60" step="1" value="25">
     </label>
@@ -1729,41 +2394,220 @@
       <input type="range" id="galleryHorizontalImageHeight" min="10" max="100" step="1" value="50">
     </label>
     <label>
-      <span><span>Event title color</span><input type="text" class="dev-panel-hex" id="colorEventTitleVal" value="#000000"></span>
-      <input type="color" id="colorEventTitle" value="#000000">
-    </label>
-    <label>
-      <span><span>Event text color</span><input type="text" class="dev-panel-hex" id="colorEventTextVal" value="#000000"></span>
-      <input type="color" id="colorEventText" value="#000000">
-    </label>
-    <label>
-      <span><span>Event bg</span><input type="text" class="dev-panel-hex" id="bgEventVal" value="#ffffff"></span>
-      <input type="color" id="bgEvent" value="#ffffff">
-    </label>
-    <label>
-      <span><span>Event gallery bg</span><input type="text" class="dev-panel-hex" id="bgEventGalleryVal" value="#ffffff"></span>
-      <input type="color" id="bgEventGallery" value="#ffffff">
-    </label>
-    <label>
-      <span><span>Event text bg</span><input type="text" class="dev-panel-hex" id="bgEventTextVal" value="#ffffff"></span>
-      <input type="color" id="bgEventText" value="#ffffff">
-    </label>
-    <label>
-      <span><span>Hyphenation min word length</span><span id="hyphMinWordLengthVal">4</span></span>
-      <input type="range" id="hyphMinWordLength" min="3" max="10" step="1" value="4">
-    </label>
-    <label>
-      <span><span>Hyphenation left min</span><span id="hyphLeftminVal">2</span></span>
-      <input type="range" id="hyphLeftmin" min="0" max="4" step="1" value="2">
-    </label>
-    <label>
-      <span><span>Hyphenation right min</span><span id="hyphRightminVal">2</span></span>
-      <input type="range" id="hyphRightmin" min="0" max="4" step="1" value="2">
+      <span><span>Gallery column height (vh)</span><span id="galleryColumnHeightVal">90</span></span>
+      <input type="range" id="galleryColumnHeight" min="10" max="100" step="1" value="90">
     </label>
 
     <button class="dev-panel-save" id="allSave">Save as .md</button>
     <button class="dev-panel-save" id="allApply">Apply saved settings</button>
     <div class="dev-panel-hint">Changes auto-save to this browser. Press "D" to toggle this panel.</div>
+  </div>
+
+  <div class="spaces-panel" id="spacesPanel">
+    <h4>Archive list</h4>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Row top padding</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="itemTop">−</button>
+        <span class="spaces-stepper-value" id="spaceItemTopVal">1</span>
+        <button type="button" data-space-step="1" data-space="itemTop">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Row bottom padding</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="itemBottom">−</button>
+        <span class="spaces-stepper-value" id="spaceItemBottomVal">1</span>
+        <button type="button" data-space-step="1" data-space="itemBottom">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Left padding before number</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="itemLeft">−</button>
+        <span class="spaces-stepper-value" id="spaceItemLeftVal">1</span>
+        <button type="button" data-space-step="1" data-space="itemLeft">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Number-to-info gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="numberInfo">−</button>
+        <span class="spaces-stepper-value" id="spaceNumberInfoVal">1</span>
+        <button type="button" data-space-step="1" data-space="numberInfo">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Column gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="columnGap">−</button>
+        <span class="spaces-stepper-value" id="spaceColumnGapVal">1</span>
+        <button type="button" data-space-step="1" data-space="columnGap">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Category → list gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="categoryList">−</button>
+        <span class="spaces-stepper-value" id="spaceCategoryListVal">1</span>
+        <button type="button" data-space-step="1" data-space="categoryList">+</button>
+      </span>
+    </div>
+
+    <h4>Event detail</h4>
+    <div class="spaces-row">
+      <span class="spaces-row-label">List → header gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="listHeader">−</button>
+        <span class="spaces-stepper-value" id="spaceListHeaderVal">1</span>
+        <button type="button" data-space-step="1" data-space="listHeader">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Header → filter gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="headerFilter">−</button>
+        <span class="spaces-stepper-value" id="spaceHeaderFilterVal">1</span>
+        <button type="button" data-space-step="1" data-space="headerFilter">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Filter → content gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="filterContent">−</button>
+        <span class="spaces-stepper-value" id="spaceFilterContentVal">1</span>
+        <button type="button" data-space-step="1" data-space="filterContent">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Label → text gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="labelText">−</button>
+        <span class="spaces-stepper-value" id="spaceLabelTextVal">1</span>
+        <button type="button" data-space-step="1" data-space="labelText">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Above label (mobile)</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="labelStack">−</button>
+        <span class="spaces-stepper-value" id="spaceLabelStackVal">1</span>
+        <button type="button" data-space-step="1" data-space="labelStack">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Between text columns</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="textColumns">−</button>
+        <span class="spaces-stepper-value" id="spaceTextColumnsVal">1.5</span>
+        <button type="button" data-space-step="1" data-space="textColumns">+</button>
+      </span>
+    </div>
+
+    <h4>Gallery</h4>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Image gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="galleryImage">−</button>
+        <span class="spaces-stepper-value" id="spaceGalleryImageVal">1</span>
+        <button type="button" data-space-step="1" data-space="galleryImage">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Row gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="galleryRow">−</button>
+        <span class="spaces-stepper-value" id="spaceGalleryRowVal">1</span>
+        <button type="button" data-space-step="1" data-space="galleryRow">+</button>
+      </span>
+    </div>
+    <div class="spaces-row">
+      <span class="spaces-row-label">Block gap</span>
+      <span class="spaces-stepper">
+        <button type="button" data-space-step="-1" data-space="galleryBlock">−</button>
+        <span class="spaces-stepper-value" id="spaceGalleryBlockVal">1</span>
+        <button type="button" data-space-step="1" data-space="galleryBlock">+</button>
+      </span>
+    </div>
+
+    <div class="dev-panel-hint">Values in em, 0.25 steps, starting from 1. Press "S" to toggle this panel.</div>
+  </div>
+
+  <div class="weights-panel" id="weightsPanel">
+    <h4>Weights</h4>
+    <div class="weights-row">
+      <span class="weights-row-label">Body (global default)</span>
+      <span class="weights-toggle" data-weight="body">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Archive list</span>
+      <span class="weights-toggle" data-weight="archiveList">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Nav / menu</span>
+      <span class="weights-toggle" data-weight="nav">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Event title/date/authors</span>
+      <span class="weights-toggle" data-weight="eventTitle">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Event text labels</span>
+      <span class="weights-toggle" data-weight="eventLabel">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Event body text</span>
+      <span class="weights-toggle" data-weight="eventBody">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Gallery captions</span>
+      <span class="weights-toggle" data-weight="galleryCaption">
+        <button type="button" data-weight-value="normal">Regular</button>
+        <button type="button" data-weight-value="bold">Bold</button>
+      </span>
+    </div>
+
+    <div class="dev-panel-hint">Changes auto-save to this browser. Press "W" to toggle this panel.</div>
+  </div>
+
+  <div class="columns-panel" id="columnsPanel">
+    <h4>Columns</h4>
+    <div class="weights-row">
+      <span class="weights-row-label">Archive list columns</span>
+      <span class="weights-toggle" data-columns="archiveColumnCount">
+        <button type="button" data-columns-value="1">1</button>
+        <button type="button" data-columns-value="2">2</button>
+        <button type="button" data-columns-value="3">3</button>
+        <button type="button" data-columns-value="4">4</button>
+      </span>
+    </div>
+    <div class="weights-row">
+      <span class="weights-row-label">Event text columns</span>
+      <span class="weights-toggle" data-columns="eventTextLayout">
+        <button type="button" data-columns-value="stacked">1</button>
+        <button type="button" data-columns-value="side-by-side">2</button>
+      </span>
+    </div>
+
+    <div class="dev-panel-hint">Changes auto-save to this browser. Press "P" to toggle this panel.</div>
   </div>
 
   <script>
@@ -1780,6 +2624,239 @@
       if (e.key !== 'g' && e.key !== 'G') return;
       gapSpacersColored = !gapSpacersColored;
       colorizeGapSpacers();
+    });
+
+    // The 1em purple square markers in the archive list are hidden by
+    // default; press "M" to show them.
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'm' && e.key !== 'M') return;
+      document.body.classList.toggle('hide-gap-marks');
+    });
+
+    // --- Spaces dev panel: live-editable em values for the archive list's
+    // gap-spacer-square markers. Each marker's own box size IS the real
+    // spacing (not a decorative overlay), so changing a value here resizes
+    // the actual layout gap, not just the label. Press "S" to toggle.
+    const spacesPanel = document.getElementById('spacesPanel');
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 's' && e.key !== 'S') return;
+      spacesPanel.classList.toggle('visible');
+    });
+
+    const SPACE_CONFIGS = {
+      itemTop: { cssVar: '--space-archive-item-top', dataGap: 'item-top', valEl: 'spaceItemTopVal', unit: 'em', step: 0.25, default: 1 },
+      itemBottom: { cssVar: '--space-archive-item-bottom', dataGap: 'item-bottom', valEl: 'spaceItemBottomVal', unit: 'em', step: 0.25, default: 1 },
+      itemLeft: { cssVar: '--space-archive-item-left', dataGap: 'item-left', valEl: 'spaceItemLeftVal', unit: 'em', step: 0.25, default: 1 },
+      numberInfo: { cssVar: '--space-archive-number-info', dataGap: 'number-info', valEl: 'spaceNumberInfoVal', unit: 'em', step: 0.25, default: 1 },
+      columnGap: { cssVar: '--space-archive-column-gap', dataGap: 'column-gap', valEl: 'spaceColumnGapVal', unit: 'em', step: 0.25, default: 1 },
+      categoryList: { cssVar: '--space-archive-category-list', dataGap: 'category-list', valEl: 'spaceCategoryListVal', unit: 'em', step: 0.25, default: 1 },
+      listHeader: { cssVar: '--space-event-list-header', dataGap: 'list-header', valEl: 'spaceListHeaderVal', unit: 'em', step: 0.25, default: 1 },
+      headerFilter: { cssVar: '--space-event-header-filter', dataGap: 'header-filter', valEl: 'spaceHeaderFilterVal', unit: 'em', step: 0.25, default: 1 },
+      filterContent: { cssVar: '--space-event-filter-content', dataGap: 'filter-content', valEl: 'spaceFilterContentVal', unit: 'em', step: 0.25, default: 1 },
+      labelText: { cssVar: '--space-event-label-text', dataGap: 'label-text', valEl: 'spaceLabelTextVal', unit: 'em', step: 0.25, default: 1 },
+      labelStack: { cssVar: '--space-event-label-stack', dataGap: 'label-stack', valEl: 'spaceLabelStackVal', unit: 'em', step: 0.25, default: 1 },
+      textColumns: { cssVar: '--space-event-text-columns', dataGap: 'text-columns', valEl: 'spaceTextColumnsVal', unit: 'em', step: 0.25, default: 1.5 },
+      galleryImage: { cssVar: '--space-gallery-image', dataGap: 'gallery-image', valEl: 'spaceGalleryImageVal', unit: 'em', step: 0.25, default: 1 },
+      galleryRow: { cssVar: '--space-gallery-row', dataGap: 'gallery-row', valEl: 'spaceGalleryRowVal', unit: 'em', step: 0.25, default: 1 },
+      galleryBlock: { cssVar: '--space-gallery-block', dataGap: 'gallery-block', valEl: 'spaceGalleryBlockVal', unit: 'em', step: 0.25, default: 1 },
+    };
+
+    const spaceValues = {};
+    Object.keys(SPACE_CONFIGS).forEach((key) => {
+      spaceValues[key] = SPACE_CONFIGS[key].default;
+    });
+
+    const SPACES_STORAGE_KEY = 'spacesSettings';
+
+    function saveSpaceSettings() {
+      localStorage.setItem(SPACES_STORAGE_KEY, JSON.stringify(spaceValues));
+    }
+
+    function loadSpaceSettings() {
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(SPACES_STORAGE_KEY) || '{}');
+      } catch (err) {}
+      Object.keys(saved).forEach((key) => {
+        if (SPACE_CONFIGS[key] && typeof saved[key] === 'number') {
+          spaceValues[key] = saved[key];
+        }
+      });
+    }
+
+    function formatSpaceValue(n, unit) {
+      return unit === 'em' ? (Math.round(n * 100) / 100).toString() : Math.round(n).toString();
+    }
+
+    function updateSpace(key, newValue, { save = true } = {}) {
+      const config = SPACE_CONFIGS[key];
+      const rounded = config.unit === 'em' ? Math.round(newValue * 100) / 100 : Math.round(newValue);
+      const clamped = Math.max(0, rounded);
+      spaceValues[key] = clamped;
+      const display = formatSpaceValue(clamped, config.unit);
+      document.documentElement.style.setProperty(config.cssVar, `${clamped}${config.unit}`);
+      document.getElementById(config.valEl).textContent = display;
+      // Markers can appear more than once per page (every archive row, or
+      // both text panels of an event), so update every instance at once.
+      document.querySelectorAll(`.gap-spacer-square[data-gap="${config.dataGap}"] .gap-spacer-square-label`).forEach((el) => {
+        el.textContent = display;
+      });
+      if (save) saveSpaceSettings();
+    }
+
+    // Re-applies every current value's label text to whatever markers
+    // exist in the DOM right now - the CSS vars are global and always
+    // correct (so box sizes never drift), but marker labels are baked
+    // into each render as the config default, so freshly-rendered content
+    // (a newly opened event, a re-rendered archive list) needs this to
+    // pick up values the user already changed instead of showing stale
+    // defaults next to a correctly-sized box.
+    function applyAllSpaceValues() {
+      Object.keys(SPACE_CONFIGS).forEach((key) => updateSpace(key, spaceValues[key], { save: false }));
+    }
+
+    loadSpaceSettings();
+    applyAllSpaceValues();
+
+    spacesPanel.querySelectorAll('.spaces-stepper button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.space;
+        const step = Number(btn.dataset.spaceStep) * SPACE_CONFIGS[key].step;
+        updateSpace(key, spaceValues[key] + step);
+      });
+    });
+
+    // --- Weights dev panel: regular/bold toggle per text group, same
+    // save/load/apply pattern as the Spaces panel above. Press "W".
+    const weightsPanel = document.getElementById('weightsPanel');
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'w' && e.key !== 'W') return;
+      weightsPanel.classList.toggle('visible');
+    });
+
+    const WEIGHT_CONFIGS = {
+      body: { cssVar: '--weight-body', default: 'bold' },
+      archiveList: { cssVar: '--weight-archive-list', default: 'normal' },
+      nav: { cssVar: '--weight-nav', default: 'bold' },
+      eventTitle: { cssVar: '--weight-event-title', default: 'bold' },
+      eventLabel: { cssVar: '--weight-event-label', default: 'bold' },
+      eventBody: { cssVar: '--weight-event-body', default: 'bold' },
+      galleryCaption: { cssVar: '--weight-gallery-caption', default: 'bold' },
+    };
+
+    const weightValues = {};
+    Object.keys(WEIGHT_CONFIGS).forEach((key) => {
+      weightValues[key] = WEIGHT_CONFIGS[key].default;
+    });
+
+    const WEIGHTS_STORAGE_KEY = 'weightsSettings';
+
+    function saveWeightSettings() {
+      localStorage.setItem(WEIGHTS_STORAGE_KEY, JSON.stringify(weightValues));
+    }
+
+    function loadWeightSettings() {
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(WEIGHTS_STORAGE_KEY) || '{}');
+      } catch (err) {}
+      Object.keys(saved).forEach((key) => {
+        if (WEIGHT_CONFIGS[key] && (saved[key] === 'normal' || saved[key] === 'bold')) {
+          weightValues[key] = saved[key];
+        }
+      });
+    }
+
+    function updateWeight(key, value, { save = true } = {}) {
+      weightValues[key] = value;
+      document.documentElement.style.setProperty(WEIGHT_CONFIGS[key].cssVar, value);
+      weightsPanel.querySelectorAll(`.weights-toggle[data-weight="${key}"] button`).forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.weightValue === value);
+      });
+      if (save) saveWeightSettings();
+    }
+
+    function applyAllWeightValues() {
+      Object.keys(WEIGHT_CONFIGS).forEach((key) => updateWeight(key, weightValues[key], { save: false }));
+    }
+
+    loadWeightSettings();
+    applyAllWeightValues();
+
+    weightsPanel.querySelectorAll('.weights-toggle button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.closest('.weights-toggle').dataset.weight;
+        updateWeight(key, btn.dataset.weightValue);
+      });
+    });
+
+    // --- Columns dev panel: quick layout comparisons (how many columns
+    // the archive list uses, whether the two event-detail texts sit
+    // stacked or side by side). Same save/load/apply pattern as the other
+    // panels, but each entry applies itself differently (a CSS var vs a
+    // body class), so config values carry their own apply() instead of a
+    // shared cssVar field. Press "P".
+    const columnsPanel = document.getElementById('columnsPanel');
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'p' && e.key !== 'P') return;
+      columnsPanel.classList.toggle('visible');
+    });
+
+    const COLUMNS_CONFIGS = {
+      archiveColumnCount: {
+        default: '3',
+        apply: (value) => document.documentElement.style.setProperty('--archive-column-count', value),
+      },
+      eventTextLayout: {
+        default: 'stacked',
+        apply: (value) => document.body.classList.toggle('event-text-2col', value === 'side-by-side'),
+      },
+    };
+
+    const columnsValues = {};
+    Object.keys(COLUMNS_CONFIGS).forEach((key) => {
+      columnsValues[key] = COLUMNS_CONFIGS[key].default;
+    });
+
+    const COLUMNS_STORAGE_KEY = 'columnsSettings';
+
+    function saveColumnsSettings() {
+      localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnsValues));
+    }
+
+    function loadColumnsSettings() {
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(COLUMNS_STORAGE_KEY) || '{}');
+      } catch (err) {}
+      Object.keys(saved).forEach((key) => {
+        if (COLUMNS_CONFIGS[key] && typeof saved[key] === 'string') {
+          columnsValues[key] = saved[key];
+        }
+      });
+    }
+
+    function updateColumns(key, value, { save = true } = {}) {
+      columnsValues[key] = value;
+      COLUMNS_CONFIGS[key].apply(value);
+      columnsPanel.querySelectorAll(`.weights-toggle[data-columns="${key}"] button`).forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.columnsValue === value);
+      });
+      if (save) saveColumnsSettings();
+    }
+
+    function applyAllColumnsValues() {
+      Object.keys(COLUMNS_CONFIGS).forEach((key) => updateColumns(key, columnsValues[key], { save: false }));
+    }
+
+    loadColumnsSettings();
+    applyAllColumnsValues();
+
+    columnsPanel.querySelectorAll('.weights-toggle button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.closest('.weights-toggle').dataset.columns;
+        updateColumns(key, btn.dataset.columnsValue);
+      });
     });
 
     const SANITY_PROJECT_ID = 'jvmgvacm';
@@ -1818,7 +2895,7 @@
     // Event detail background theme (resets each page load, not persisted).
     const EVENT_BG_THEMES = {
       white: { bg: '#ffffff', text: '#000000', dim: '#999999' },
-      black: { bg: '#000000', text: '#ffffff', dim: '#666666' },
+      black: { bg: '#000000', text: '#d9d9d9', dim: '#666666' },
     };
     let eventBgTheme = 'white';
 
@@ -2096,20 +3173,26 @@
           const href = e.slug ? ` href="/archive/${escapeHtml(e.slug)}"` : ` href="#"`;
           return `
             <${tag} class="archive-item${active ? ' active' : ''}" data-index="${i}"${href}>
-              <div class="archive-number">${i + 1}</div>
-              <div class="archive-info">
-                <div class="archive-title">${escapeHtml(L(e.title))}</div>
-                <div class="archive-date">${fmtDate(e.date)}</div>
-                <div class="archive-authors${hasMore ? ' has-more' : ''}">
-                  <span class="archive-authors-short">${escapeHtml(partsShort)}</span>
-                  ${hasMore ? `
-                    <span class="archive-authors-full">
-                      <span>${escapeHtml(partsFull)}</span>
-                      <span>${escapeHtml(partsFull)}</span>
-                    </span>
-                  ` : ''}
+              <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+              <div class="archive-item-row">
+                <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+                <div class="archive-number">${i + 1}</div>
+                <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+                <div class="archive-info">
+                  <div class="archive-title">${escapeHtml(L(e.title))}</div>
+                  <div class="archive-date">${fmtDate(e.date)}</div>
+                  <div class="archive-authors${hasMore ? ' has-more' : ''}">
+                    <span class="archive-authors-short">${escapeHtml(partsShort)}</span>
+                    ${hasMore ? `
+                      <span class="archive-authors-full">
+                        <span>${escapeHtml(partsFull)}</span>
+                        <span>${escapeHtml(partsFull)}</span>
+                      </span>
+                    ` : ''}
+                  </div>
                 </div>
               </div>
+              <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
             </${tag}>
           `;
         })
@@ -2122,7 +3205,8 @@
         });
       });
 
-      markColumnFirstItems();
+      markColumnEdgeItems();
+      applyAllSpaceValues();
     }
 
     // With CSS multi-column, the browser (not markup order) decides which
@@ -2139,7 +3223,122 @@
       });
     }
 
-    window.addEventListener('resize', markColumnFirstItems);
+    // Same "no CSS selector for this" problem as markColumnFirstItems, but
+    // for the last item of each column - columns don't all end at the same
+    // height (the browser balances them by content, not a shared bottom
+    // edge), so instead of comparing against one reference point, group
+    // items by their shared left (each column has its own x) and take the
+    // one with the largest top within each group.
+    function markColumnLastItems() {
+      const items = Array.from(archiveList.querySelectorAll('.archive-item'));
+      if (!items.length) return;
+      items.forEach((item) => item.classList.remove('col-last'));
+      const columns = new Map();
+      items.forEach((item) => {
+        const left = Math.round(item.getBoundingClientRect().left);
+        if (!columns.has(left)) columns.set(left, []);
+        columns.get(left).push(item);
+      });
+      columns.forEach((columnItems) => {
+        let last = columnItems[0];
+        columnItems.forEach((item) => {
+          if (item.getBoundingClientRect().top > last.getBoundingClientRect().top) last = item;
+        });
+        last.classList.add('col-last');
+      });
+    }
+
+    function markColumnEdgeItems() {
+      markColumnFirstItems();
+      markColumnLastItems();
+    }
+
+    window.addEventListener('resize', markColumnEdgeItems);
+
+    // Same fundamental problem as markColumnFirstItems, for gallery image
+    // rows instead of archive-list columns: with flex-wrap, the browser
+    // (not markup order) decides which images wrap to a new row, so it
+    // can't be known until after layout. Wherever a wrap is detected, a
+    // real "row break" marker (flex-basis:100%, which forces its own line)
+    // is inserted before that row's first image - its own height becomes
+    // the real row gap. Re-run on resize and whenever a gallery becomes
+    // visible (switching to the Images tab), since wrap points shift with
+    // both, and any markers from a stale layout are removed first so they
+    // don't pile up across repeated runs.
+    function markGalleryRows(root) {
+      (root || document).querySelectorAll('.content-gallery-strip').forEach((strip) => {
+        strip.querySelectorAll('.gap-spacer-square--row-break').forEach((el) => el.remove());
+        const wraps = Array.from(strip.querySelectorAll('.gallery-item-wrap'));
+        if (!wraps.length) return;
+        // Reset every image-gap marker to visible before re-measuring -
+        // otherwise a marker hidden by a previous run (because its image
+        // ended a row then) would stay hidden after a resize moves that
+        // image to the middle of a row instead.
+        wraps.forEach((wrap) => {
+          const gapMarker = wrap.querySelector('.gap-spacer-square[data-gap="gallery-image"]');
+          if (gapMarker) gapMarker.style.display = '';
+        });
+        // Measure every wrap's position in the current marker-free layout
+        // FIRST, then insert markers in a separate pass. Inserting a
+        // flex-basis:100% marker claims an entire row for itself, which
+        // pushes every wrap after it down by one extra row - doing the
+        // measure-and-insert in a single forward pass made each insertion
+        // invalidate the "top" comparison for everything still to come,
+        // cascading into a spurious break before every remaining image.
+        const tops = wraps.map((wrap) => wrap.getBoundingClientRect().top);
+        const breakBeforeIndexes = [];
+        for (let i = 1; i < wraps.length; i++) {
+          if (Math.abs(tops[i] - tops[i - 1]) > 1) breakBeforeIndexes.push(i);
+        }
+        const currentLabel = formatSpaceValue(spaceValues.galleryRow, SPACE_CONFIGS.galleryRow.unit);
+        breakBeforeIndexes.forEach((i) => {
+          const marker = document.createElement('div');
+          marker.className = 'gap-spacer-square gap-spacer-square--row-break';
+          marker.dataset.gap = 'gallery-row';
+          marker.innerHTML = `<span class="gap-spacer-square-label">${currentLabel}</span>`;
+          strip.insertBefore(marker, wraps[i]);
+        });
+        // The last image of every row (the one right before each row
+        // break, plus the very last image overall) shouldn't have a
+        // trailing image-gap - that gap only makes sense between two
+        // images still on the same row.
+        const rowEndIndexes = breakBeforeIndexes.map((i) => i - 1).concat([wraps.length - 1]);
+        rowEndIndexes.forEach((i) => {
+          const gapMarker = wraps[i].querySelector('.gap-spacer-square[data-gap="gallery-image"]');
+          if (gapMarker) gapMarker.style.display = 'none';
+        });
+      });
+    }
+
+    window.addEventListener('resize', () => markGalleryRows());
+
+    // Each text panel's label sizes to its own content by default (see
+    // .content-text-col's grid-template-columns), so "Curatorial text" and
+    // "Author's text" end up different widths since they're different
+    // length strings - not wrong, just inconsistent when both are visible.
+    // Measuring both and sharing the wider one back down via a CSS custom
+    // property (which cascades to both panels' independent grids since
+    // it's set on their common ancestor) keeps the label column aligned
+    // without hardcoding a width that would go stale on a language switch
+    // or a text label size change.
+    function syncLabelWidths(root) {
+      (root || document).querySelectorAll('.content-text-row').forEach((row) => {
+        const headers = row.querySelectorAll('.content-panel-header');
+        if (headers.length < 2) return;
+        row.style.removeProperty('--content-label-width');
+        const maxWidth = Math.max(...Array.from(headers).map((h) => h.getBoundingClientRect().width));
+        // A suspiciously tiny measurement (row briefly hidden, or measured
+        // against a fallback font before the real one finished loading)
+        // would otherwise lock in a column too narrow to hold any word,
+        // forcing every character of the label onto its own line - safer
+        // to leave it at the CSS fallback (auto) than apply a clearly
+        // broken value.
+        if (maxWidth < 20) return;
+        row.style.setProperty('--content-label-width', `${maxWidth}px`);
+      });
+    }
+
+    window.addEventListener('resize', () => syncLabelWidths());
 
     function openEventBySlug(slug, { updateUrl } = {}) {
       const idx = archiveEvents.findIndex((e) => e.slug === slug);
@@ -2147,11 +3346,14 @@
     }
 
     function galleryBlockHtml(images, name, type, index, uid) {
-      const nameHtml = name ? `<span class="content-gallery-name">${escapeHtml(name)}</span>` : '';
+      // Per-photo caption if one was set in Sanity, otherwise the gallery's
+      // own name - resolved once here so both gallery types and the hover
+      // JS below can just read the value straight off the markup.
+      const captionFor = (img) => L(img.caption) || name;
 
       if (type === 'photoHorizontal') {
         const horizontalImages = images
-          .map((img, i) => `<img src="${imageUrl(img.url, 1800)}" alt="" data-image-index="${i}" class="content-gallery-horizontal-img${i === 0 ? ' active' : ''}">`)
+          .map((img, i) => `<img src="${imageUrl(img.url, 1800)}" alt="" data-image-index="${i}" data-caption="${escapeHtml(captionFor(img))}" class="content-gallery-horizontal-img${i === 0 ? ' active' : ''}">`)
           .join('');
         const horizontalNav = images.length > 1
           ? `
@@ -2166,16 +3368,38 @@
             <div class="content-gallery-horizontal" data-uid="${uid}" data-gallery-index="${index}" data-current-index="0">
               ${horizontalImages}
               ${horizontalNav}
+              <div class="content-gallery-caption" data-horizontal-caption>${escapeHtml(captionFor(images[0]))}</div>
             </div>
-            <div class="content-image-count">${nameHtml}</div>
+          </div>
+        `;
+      }
+
+      if (type === 'photoColumn') {
+        const columnItems = images
+          .map((img, imgIndex) => `
+            <div class="content-gallery-strip-item content-gallery-column-item" data-uid="${uid}" data-gallery-index="${index}" data-image-index="${imgIndex}">
+              <img src="${imageUrl(img.url, 1800)}" alt="">
+              <div class="content-gallery-caption">${escapeHtml(captionFor(img))}</div>
+            </div>
+          `)
+          .join('');
+        return `
+          <div class="content-gallery-col" data-gallery-index="${index}">
+            <div class="content-gallery-column">
+              ${columnItems}
+            </div>
           </div>
         `;
       }
 
       const stripItems = images
         .map((img, imgIndex) => `
-          <div class="content-gallery-strip-item" data-uid="${uid}" data-gallery-index="${index}" data-image-index="${imgIndex}">
-            <img src="${imageUrl(img.url, 1800)}" alt="">
+          <div class="gallery-item-wrap">
+            <div class="content-gallery-strip-item" data-uid="${uid}" data-gallery-index="${index}" data-image-index="${imgIndex}">
+              <img src="${imageUrl(img.url, 1800)}" alt="">
+              <div class="content-gallery-caption">${escapeHtml(captionFor(img))}</div>
+            </div>
+            ${imgIndex < images.length - 1 ? '<div class="gap-spacer-square" data-gap="gallery-image"><span class="gap-spacer-square-label">1</span></div>' : ''}
           </div>
         `)
         .join('');
@@ -2184,7 +3408,6 @@
           <div class="content-gallery-strip">
             ${stripItems}
           </div>
-          <div class="content-image-count">${nameHtml}</div>
         </div>
       `;
     }
@@ -2204,7 +3427,7 @@
       const galleries = (e.galleries || []).filter((g) => g.images && g.images.length);
       const galleryBlocksHtml = galleries
         .map((g, gi) => galleryBlockHtml(g.images, L(g.name), g.type, gi, uid))
-        .join('');
+        .join('<div class="gap-spacer-square gap-spacer-square--block" data-gap="gallery-block"><span class="gap-spacer-square-label">1</span></div>');
       const totalImageCount = galleries.reduce((sum, g) => sum + g.images.length, 0);
 
       const textPanelId = `text-panel-1-${uid}`;
@@ -2230,6 +3453,7 @@
             </div>
             <a href="#" class="archive-close detail-close" data-uid="${uid}">(${UI_STRINGS.close[currentLang] || UI_STRINGS.close.ru})</a>
           </div>
+          <div class="gap-spacer-square gap-spacer-square--block" data-gap="header-filter"><span class="gap-spacer-square-label">1</span></div>
           <div class="archive-detail-switches">
             ${hasBothTabs ? `
               <div class="archive-detail-tabs" data-active-tab="${defaultTab}">
@@ -2250,6 +3474,7 @@
               </div>
             ` : ''}
           </div>
+          <div class="gap-spacer-square gap-spacer-square--block" data-gap="filter-content"><span class="gap-spacer-square-label">1</span></div>
           <div class="archive-detail-columns" data-active-tab="${defaultTab}">
           <div class="content-media-col" id="${galleryAnchorId}">
             ${galleryBlocksHtml}
@@ -2259,16 +3484,20 @@
               ${eventText.length ? `
                 <div class="accordion-panel" id="${textPanelId}">
                   <div class="content-text-col">
+                    <div class="gap-spacer-square" data-gap="label-stack"><span class="gap-spacer-square-label">1</span></div>
                     <div class="content-panel-header">${escapeHtml(L(e.textTitle) || UI_STRINGS.text[currentLang])}</div>
+                    <div class="gap-spacer-square" data-gap="label-text"><span class="gap-spacer-square-label">1</span></div>
                     <div class="archive-detail-body hyphenate" lang="${currentLang}">${bodyHtml}</div>
                   </div>
                 </div>
               ` : ''}
-              ${eventText.length && eventAdditionalText.length ? '<div class="gap-spacer-breakout"></div>' : ''}
+              ${eventText.length && eventAdditionalText.length ? '<div class="gap-spacer-square gap-spacer-square--breakout" data-gap="text-columns"><span class="gap-spacer-square-label">1.5</span></div>' : ''}
               ${eventAdditionalText.length ? `
                 <div class="accordion-panel" id="${additionalTextPanelId}">
                   <div class="content-text-col">
+                    <div class="gap-spacer-square" data-gap="label-stack"><span class="gap-spacer-square-label">1</span></div>
                     <div class="content-panel-header">${escapeHtml(L(e.additionalTextTitle) || UI_STRINGS.additionalText[currentLang])}</div>
+                    <div class="gap-spacer-square" data-gap="label-text"><span class="gap-spacer-square-label">1</span></div>
                     <div class="content-additional-text">${additionalTextHtml}</div>
                   </div>
                 </div>
@@ -2288,7 +3517,7 @@
       // shown at a time, toggled by radio-button labels under the event
       // title.
       container.querySelectorAll('.archive-detail-tabs').forEach((tabs) => {
-        const columns = tabs.closest('.archive-detail-switches').nextElementSibling;
+        const columns = tabs.closest('.archive-detail-block').querySelector('.archive-detail-columns');
         const labels = tabs.querySelectorAll('.archive-detail-tab');
 
         const bgTabs = tabs.closest('.archive-detail-switches').querySelector('.archive-detail-bg-tabs');
@@ -2302,12 +3531,46 @@
             columns.querySelectorAll('.content-gallery-horizontal').forEach((wrap) => {
               if (wrap._fitCurrentImage) wrap._fitCurrentImage();
             });
+            markGalleryRows(columns);
           }
         };
 
         labels.forEach((label) => {
           label.addEventListener('click', () => setActiveTab(label.dataset.tab));
         });
+      });
+
+      // Image-only events (no text at all) default straight to the Images
+      // tab with no click ever firing setActiveTab, so their gallery rows
+      // need marking here too - harmless no-op for events currently on the
+      // hidden Text tab (a 0-size gallery has no detectable wraps yet; it
+      // gets marked for real once the user actually switches to Images).
+      markGalleryRows(container);
+
+      syncLabelWidths(container);
+
+      // Labels can be measured against a fallback font (font-display:swap)
+      // before Univers actually finishes loading, locking in a width based
+      // on different glyph metrics than what ends up on screen. Scoped to
+      // this specific container (not a single global hook) so it always
+      // re-syncs the content that was actually just built, regardless of
+      // whether document.fonts.ready happens to resolve before or after
+      // this event's HTML exists - a one-time global listener could fire
+      // on empty content (e.g. cached fonts resolving before the async
+      // Sanity fetch finishes) and then never fire again.
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => syncLabelWidths(container));
+      }
+
+      // Each image's rendered width depends on its own intrinsic aspect
+      // ratio (height is fixed, width is auto), which isn't known until it
+      // finishes loading - re-run row detection as each one loads, since
+      // wrap points measured before that can be stale/wrong. markGalleryRows
+      // always clears its own previous markers first, so repeated calls
+      // are safe.
+      container.querySelectorAll('.content-gallery-strip-item img').forEach((img) => {
+        if (img.complete) return;
+        img.addEventListener('load', () => markGalleryRows(container));
       });
 
       // Black/white background switch: a current-session preference (not
@@ -2346,14 +3609,15 @@
       container.querySelectorAll('.content-gallery-horizontal').forEach((wrap) => {
         const imgs = wrap.querySelectorAll('.content-gallery-horizontal-img');
         const hit = wrap.querySelector('[data-horizontal-hit]');
+        const captionEl = wrap.querySelector('[data-horizontal-caption]');
 
         // object-fit:contain can letterbox (image smaller than its box)
         // when the photo's aspect ratio doesn't match the fixed height —
-        // size the click-through nav overlay to the exact rendered photo
-        // (centered, matching object-position:center top), not the full
-        // box, so it never covers empty letterbox space.
+        // size the click-through nav overlay AND the caption to the exact
+        // rendered photo (centered, matching object-position:center top),
+        // not the full box, so neither one covers/overflows past the empty
+        // letterbox space on either side.
         const fitHitToImage = (img) => {
-          if (!hit) return;
           const apply = () => {
             const boxWidth = wrap.getBoundingClientRect().width;
             const boxHeight = img.getBoundingClientRect().height;
@@ -2362,8 +3626,11 @@
             const boxAspect = boxWidth / boxHeight;
             const displayWidth = imageAspect > boxAspect ? boxWidth : boxHeight * imageAspect;
             const displayHeight = imageAspect > boxAspect ? boxWidth / imageAspect : boxHeight;
-            hit.style.width = `${displayWidth}px`;
-            hit.style.height = `${displayHeight}px`;
+            if (hit) {
+              hit.style.width = `${displayWidth}px`;
+              hit.style.height = `${displayHeight}px`;
+            }
+            if (captionEl) captionEl.style.width = `${displayWidth}px`;
           };
           if (img.complete) apply();
           else img.addEventListener('load', apply, { once: true });
@@ -2391,6 +3658,7 @@
           imgs[next].classList.add('active');
           wrap.dataset.currentIndex = String(next);
           fitHitToImage(imgs[next]);
+          if (captionEl) captionEl.textContent = imgs[next].dataset.caption || '';
         };
         const prevZone = wrap.querySelector('[data-horizontal-nav="prev"]');
         const nextZone = wrap.querySelector('[data-horizontal-nav="next"]');
@@ -2434,6 +3702,7 @@
       archiveDetail.innerHTML = buildEventDetailHtml(e, uid);
       wireEventDetailBlocks(archiveDetail, { [uid]: e });
       colorizeGapSpacers();
+      applyAllSpaceValues();
 
       archiveDetail.querySelector('.detail-close').addEventListener('click', (evt) => {
         evt.preventDefault();
@@ -2451,7 +3720,8 @@
       archiveDetail.classList.add('visible');
 
       if (isMobile) {
-        archiveDetail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const targetY = window.scrollY + archiveDetail.getBoundingClientRect().top - 29;
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
       }
     }
 
@@ -2474,6 +3744,7 @@
         .join(feedSeparator);
       wireEventDetailBlocks(archiveDetail, eventsByUid);
       colorizeGapSpacers();
+      applyAllSpaceValues();
       archiveDetail.querySelectorAll('.detail-close').forEach((closeLink) => {
         closeLink.addEventListener('click', (evt) => {
           evt.preventDefault();
@@ -2743,12 +4014,10 @@
     const siteFontSize = document.getElementById('siteFontSize');
     const siteLineHeight = document.getElementById('siteLineHeight');
     const siteLetterSpacing = document.getElementById('siteLetterSpacing');
-    const siteColor = document.getElementById('siteColor');
 
     const siteFontSizeVal = document.getElementById('siteFontSizeVal');
     const siteLineHeightVal = document.getElementById('siteLineHeightVal');
     const siteLetterSpacingVal = document.getElementById('siteLetterSpacingVal');
-    const siteColorVal = document.getElementById('siteColorVal');
 
     siteFontSize.addEventListener('input', () => {
       document.documentElement.style.setProperty('--site-font-size', `${siteFontSize.value}px`);
@@ -2809,6 +4078,7 @@
     contentPanelHeaderFontSize.addEventListener('input', () => {
       document.documentElement.style.setProperty('--content-panel-header-font-size', `${contentPanelHeaderFontSize.value}px`);
       contentPanelHeaderFontSizeVal.textContent = contentPanelHeaderFontSize.value;
+      syncLabelWidths();
     });
 
     const galleryTitleFontSizeDesktop = document.getElementById('galleryTitleFontSizeDesktop');
@@ -2827,30 +4097,6 @@
       galleryTitleFontSizeMobileVal.textContent = galleryTitleFontSizeMobile.value;
     });
 
-    const galleryImageGap = document.getElementById('galleryImageGap');
-    const galleryImageGapVal = document.getElementById('galleryImageGapVal');
-
-    galleryImageGap.addEventListener('input', () => {
-      document.documentElement.style.setProperty('--gallery-image-gap', `${galleryImageGap.value}px`);
-      galleryImageGapVal.textContent = galleryImageGap.value;
-    });
-
-    const galleryRowGap = document.getElementById('galleryRowGap');
-    const galleryRowGapVal = document.getElementById('galleryRowGapVal');
-
-    galleryRowGap.addEventListener('input', () => {
-      document.documentElement.style.setProperty('--gallery-row-gap', `${galleryRowGap.value}px`);
-      galleryRowGapVal.textContent = galleryRowGap.value;
-    });
-
-    const galleryBlockGap = document.getElementById('galleryBlockGap');
-    const galleryBlockGapVal = document.getElementById('galleryBlockGapVal');
-
-    galleryBlockGap.addEventListener('input', () => {
-      document.documentElement.style.setProperty('--gallery-block-gap', `${galleryBlockGap.value}px`);
-      galleryBlockGapVal.textContent = galleryBlockGap.value;
-    });
-
     const galleryImageHeight = document.getElementById('galleryImageHeight');
     const galleryImageHeightVal = document.getElementById('galleryImageHeightVal');
 
@@ -2865,6 +4111,14 @@
     galleryHorizontalImageHeight.addEventListener('input', () => {
       document.documentElement.style.setProperty('--gallery-horizontal-image-height', `${galleryHorizontalImageHeight.value}vh`);
       galleryHorizontalImageHeightVal.textContent = galleryHorizontalImageHeight.value;
+    });
+
+    const galleryColumnHeight = document.getElementById('galleryColumnHeight');
+    const galleryColumnHeightVal = document.getElementById('galleryColumnHeightVal');
+
+    galleryColumnHeight.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--gallery-column-height', `${galleryColumnHeight.value}vh`);
+      galleryColumnHeightVal.textContent = galleryColumnHeight.value;
     });
 
     siteLineHeight.addEventListener('input', () => {
@@ -2923,57 +4177,6 @@
       archiveTabsFontSizeVal.textContent = archiveTabsFontSize.value;
     });
 
-    const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
-
-    function wireColorPair(colorInput, hexInput, cssVar) {
-      colorInput.addEventListener('input', () => {
-        document.documentElement.style.setProperty(cssVar, colorInput.value);
-        hexInput.value = colorInput.value;
-      });
-      hexInput.addEventListener('input', () => {
-        if (!HEX_COLOR_RE.test(hexInput.value)) return;
-        colorInput.value = hexInput.value;
-        document.documentElement.style.setProperty(cssVar, hexInput.value);
-        colorInput.dispatchEvent(new Event('change'));
-        saveSettings();
-      });
-    }
-
-    wireColorPair(siteColor, siteColorVal, '--site-color');
-
-    // --- Section colors ---
-    const SECTION_COLORS = [
-      { id: 'colorAbout', cssVar: '--color-about' },
-      { id: 'colorArchive', cssVar: '--color-archive' },
-      { id: 'colorEventTitle', cssVar: '--color-event-title' },
-      { id: 'colorEventText', cssVar: '--color-event-text' },
-      { id: 'colorMenu', cssVar: '--color-menu' },
-      { id: 'bgAbout', cssVar: '--bg-about' },
-      { id: 'bgArchive', cssVar: '--bg-archive' },
-      { id: 'bgEvent', cssVar: '--bg-event' },
-      { id: 'bgEventGallery', cssVar: '--bg-event-gallery' },
-      { id: 'bgEventText', cssVar: '--bg-event-text' },
-    ];
-
-    SECTION_COLORS.forEach(({ id, cssVar }) => {
-      const input = document.getElementById(id);
-      const valEl = document.getElementById(`${id}Val`);
-      wireColorPair(input, valEl, cssVar);
-    });
-
-    // --- Hyphenation tuning (requires reload to take effect) ---
-    ['hyphMinWordLength', 'hyphLeftmin', 'hyphRightmin'].forEach((id) => {
-      const input = document.getElementById(id);
-      const valEl = document.getElementById(`${id}Val`);
-      input.addEventListener('input', () => {
-        valEl.textContent = input.value;
-      });
-      input.addEventListener('change', () => {
-        saveSettings();
-        location.reload();
-      });
-    });
-
     document.getElementById('allSave').addEventListener('click', () => {
       const md = `# Site Typography Settings
 
@@ -2987,11 +4190,9 @@
 - Text label size: ${contentPanelHeaderFontSize.value}px
 - Gallery title size desktop: ${galleryTitleFontSizeDesktop.value}px
 - Gallery title size mobile: ${galleryTitleFontSizeMobile.value}px
-- Gallery image gap: ${galleryImageGap.value}px
-- Gallery row gap: ${galleryRowGap.value}px
-- Gallery block gap: ${galleryBlockGap.value}px
 - Gallery image height: ${galleryImageHeight.value}vh
 - Gallery horizontal image height: ${galleryHorizontalImageHeight.value}vh
+- Gallery column height: ${galleryColumnHeight.value}vh
 - Line height: ${siteLineHeight.value}
 - Event text line height: ${eventTextLineHeight.value}
 - Event text letter spacing: ${eventTextLetterSpacing.value}px
@@ -3002,24 +4203,13 @@
 - Page padding left: ${document.getElementById('pagePaddingLeft').value}px
 - Nav text size: ${navFontSize.value}px
 - Text/Images switch + Close size: ${archiveTabsFontSize.value}px
-- Color: ${siteColor.value}
-- About color: ${document.getElementById('colorAbout').value}
-- Archive color: ${document.getElementById('colorArchive').value}
-- Event title color: ${document.getElementById('colorEventTitle').value}
-- Event text color: ${document.getElementById('colorEventText').value}
-- Menu color: ${document.getElementById('colorMenu').value}
-- About bg: ${document.getElementById('bgAbout').value}
-- Archive bg: ${document.getElementById('bgArchive').value}
-- Event bg: ${document.getElementById('bgEvent').value}
-- Event gallery bg: ${document.getElementById('bgEventGallery').value}
-- Event text bg: ${document.getElementById('bgEventText').value}
 `;
       downloadMarkdown('site-typography-settings.md', md);
     });
 
     // --- Persist typography settings in this browser ---
     const TYPOGRAPHY_STORAGE_KEY = 'typographySettings';
-    const SLIDER_IDS = ['siteFontSize', 'archiveTextFontSize', 'archiveListFontSize', 'archiveListTitleFontSize', 'archiveListDateFontSize', 'archiveListAuthorFontSize', 'archiveListNumberFontSize', 'contentPanelHeaderFontSize', 'galleryTitleFontSizeDesktop', 'galleryTitleFontSizeMobile', 'galleryImageGap', 'galleryRowGap', 'galleryBlockGap', 'galleryImageHeight', 'galleryHorizontalImageHeight', 'siteLineHeight', 'eventTextLineHeight', 'eventTextLetterSpacing', 'siteLetterSpacing', 'pagePaddingTop', 'pagePaddingRight', 'pagePaddingBottom', 'pagePaddingLeft', 'navFontSize', 'archiveTabsFontSize', 'siteColor', 'colorAbout', 'colorArchive', 'colorEventTitle', 'colorEventText', 'colorMenu', 'bgAbout', 'bgArchive', 'bgEvent', 'bgEventGallery', 'bgEventText', 'hyphMinWordLength', 'hyphLeftmin', 'hyphRightmin'];
+    const SLIDER_IDS = ['siteFontSize', 'archiveTextFontSize', 'archiveListFontSize', 'archiveListTitleFontSize', 'archiveListDateFontSize', 'archiveListAuthorFontSize', 'archiveListNumberFontSize', 'contentPanelHeaderFontSize', 'galleryTitleFontSizeDesktop', 'galleryTitleFontSizeMobile', 'galleryImageHeight', 'galleryHorizontalImageHeight', 'galleryColumnHeight', 'siteLineHeight', 'eventTextLineHeight', 'eventTextLetterSpacing', 'siteLetterSpacing', 'pagePaddingTop', 'pagePaddingRight', 'pagePaddingBottom', 'pagePaddingLeft', 'navFontSize', 'archiveTabsFontSize'];
 
     function collectSettings() {
       const settings = {};

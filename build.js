@@ -145,20 +145,26 @@ function renderArchiveRow(e, i) {
 
   return `
     <a class="archive-item active" data-index="${i}"${href}>
-      <div class="archive-number">${i + 1}</div>
-      <div class="archive-info">
-        <div class="archive-title">${escapeHtml(L(e.title, lang))}</div>
-        <div class="archive-date">${fmtDate(e.date)}</div>
-        <div class="archive-authors${hasMore ? ' has-more' : ''}">
-          <span class="archive-authors-short">${escapeHtml(partsShort)}</span>
-          ${hasMore ? `
-            <span class="archive-authors-full">
-              <span>${escapeHtml(partsFull)}</span>
-              <span>${escapeHtml(partsFull)}</span>
-            </span>
-          ` : ''}
+      <div class="gap-spacer-square" data-gap="item-top"><span class="gap-spacer-square-label">1</span></div>
+      <div class="archive-item-row">
+        <div class="gap-spacer-square" data-gap="item-left"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-number">${i + 1}</div>
+        <div class="gap-spacer-square" data-gap="number-info"><span class="gap-spacer-square-label">1</span></div>
+        <div class="archive-info">
+          <div class="archive-title">${escapeHtml(L(e.title, lang))}</div>
+          <div class="archive-date">${fmtDate(e.date)}</div>
+          <div class="archive-authors${hasMore ? ' has-more' : ''}">
+            <span class="archive-authors-short">${escapeHtml(partsShort)}</span>
+            ${hasMore ? `
+              <span class="archive-authors-full">
+                <span>${escapeHtml(partsFull)}</span>
+                <span>${escapeHtml(partsFull)}</span>
+              </span>
+            ` : ''}
+          </div>
         </div>
       </div>
+      <div class="gap-spacer-square" data-gap="item-bottom"><span class="gap-spacer-square-label">1</span></div>
     </a>
   `;
 }

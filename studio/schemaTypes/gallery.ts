@@ -20,6 +20,7 @@ export const gallery = defineType({
         list: [
           {title: 'Photo stripe', value: 'photoStripe'},
           {title: 'Photo horizontal', value: 'photoHorizontal'},
+          {title: 'Photo column', value: 'photoColumn'},
         ],
         layout: 'radio',
       },
@@ -30,7 +31,20 @@ export const gallery = defineType({
       name: 'images',
       title: 'Images',
       type: 'array',
-      of: [defineArrayMember({type: 'image', options: {hotspot: true}})],
+      of: [
+        defineArrayMember({
+          type: 'image',
+          options: {hotspot: true},
+          fields: [
+            defineField({
+              name: 'caption',
+              title: 'Caption',
+              description: 'Optional per-photo credit/caption shown on hover. Falls back to the gallery name if left empty.',
+              type: 'localeString',
+            }),
+          ],
+        }),
+      ],
       validation: (rule) => rule.required().min(1),
     }),
   ],
@@ -44,6 +58,7 @@ export const gallery = defineType({
       const typeLabels: Record<string, string> = {
         photoStripe: 'Photo stripe',
         photoHorizontal: 'Photo horizontal',
+        photoColumn: 'Photo column',
       }
       return {
         title: title || 'Untitled gallery',
