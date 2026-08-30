@@ -294,6 +294,36 @@ async function main() {
   fs.writeFileSync(path.join(archiveIndexDir, 'index.html'), archiveIndexHtml);
   console.log('Wrote archive/index.html.');
 
+  // 2.5. all/index.html - combined About + Archive list view (see the
+  // 'all' route in setView()), same reasoning as archive/index.html above:
+  // a static host would otherwise 404/directory-list this path instead of
+  // falling back to the SPA shell. About's own text is fetched client-side
+  // regardless of route (loadAbout() isn't gated by view), so this only
+  // needs to mark both sections visible up front to avoid a flash of the
+  // wrong (landing-page-only) state before the client JS runs.
+  let allIndexHtml = homeHtml;
+  allIndexHtml = replaceBetweenMarkers(
+    allIndexHtml,
+    'TITLE',
+    '<title>139 Documentary Center</title>'
+  );
+  allIndexHtml = allIndexHtml.replace(
+    '<div class="archive" id="archiveView">',
+    '<div class="archive visible teaser" id="archiveView">'
+  );
+  allIndexHtml = allIndexHtml.replace(
+    '<div class="ver2-hero-about" id="ver2HeroAbout"></div>',
+    '<div class="ver2-hero-about visible" id="ver2HeroAbout"></div>'
+  );
+  allIndexHtml = allIndexHtml.replace(
+    '<div class="archive-category-label" id="archiveCategoryLabel"></div>',
+    '<div class="archive-category-label" id="archiveCategoryLabel">Архив</div>'
+  );
+  const allIndexDir = path.join(ROOT_DIR, 'all');
+  fs.mkdirSync(allIndexDir, { recursive: true });
+  fs.writeFileSync(path.join(allIndexDir, 'index.html'), allIndexHtml);
+  console.log('Wrote all/index.html.');
+
   // 3. One static page per event: archive/<slug>/index.html.
   const archiveDetailPlaceholder =
     '<div class="content-container" id="archiveDetail">\n' +

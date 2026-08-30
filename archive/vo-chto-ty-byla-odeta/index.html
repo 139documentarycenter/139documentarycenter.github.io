@@ -204,6 +204,31 @@
       margin-bottom: 0;
     }
 
+    /* Only ever shown on the /all page, and only once the teaser has been
+       revealed (see .all-page/.teaser toggling in setView()) - lets you
+       go back to the teaser without a full page reload. */
+    .archive-teaser-close {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 3;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font: inherit;
+      color: var(--event-text-dim);
+    }
+
+    .archive-teaser-close:hover {
+      color: var(--event-text-color);
+    }
+
+    .archive.all-page:not(.teaser) .archive-teaser-close {
+      display: block;
+    }
+
     .ver2-nav-dropdown-toggle {
       display: none;
     }
@@ -305,6 +330,12 @@
       justify-content: center;
     }
 
+    /* Left-aligned only on the /all page (see the .all-page class in
+       setView()) - the plain landing page keeps its centered About text. */
+    body:has(#archiveView.all-page) .ver2-hero-about.visible {
+      justify-content: flex-start;
+    }
+
     /* Debug visualization: every spacing gap introduced this session is a
        real element with a random background instead of invisible
        margin/gap, so the spacing itself is visible. Direct children of
@@ -387,6 +418,14 @@
       margin-bottom: 0;
     }
 
+    /* Only added once the /all page's archive teaser is revealed (see the
+       click handler on #archiveView) - a dedicated class, not a change to
+       .ver2-hero-about itself, so this never affects the About text
+       anywhere else it's shown (the plain landing page, etc). */
+    .about-compact {
+      font-size: 16px;
+    }
+
     .ver2-wordmark {
       display: inline-block;
       text-decoration: none;
@@ -394,7 +433,8 @@
       cursor: pointer;
       font-size: var(--nav-font-size);
       line-height: var(--site-line-height);
-      text-align: center;
+      text-align: left;
+      align-self: flex-start;
     }
 
     /* One line on desktop; the mobile breakpoint below restores the break
@@ -933,6 +973,53 @@
       display: block;
     }
 
+    /* Playground state for the /all page (see setView()'s 'all' route) -
+       the real list sits there at 10% opacity as texture, with the
+       category label blown up and centered over it as a teaser instead
+       of sitting in its normal spot above the list. Clicking anywhere
+       drops back to the real thing (see the capture-phase click handler
+       on #archiveView). */
+    .archive.teaser {
+      cursor: pointer;
+      overflow: visible;
+    }
+
+    /* On .archive-body, not .archive itself - .archive's own box extends
+       to the true page edge (its left/right padding is what creates the
+       page margin), so a border there would bleed past where the content
+       actually starts/ends. .archive-body sits inside that padding
+       already, so its width naturally matches the padded content area. */
+    .archive.teaser:hover .archive-body {
+      border-bottom: 1px solid #000;
+    }
+
+    /* Only #archiveList itself, not its .archive-body ancestor too - two
+       nested opacity:0.1's compound multiplicatively (0.1 x 0.1 = 0.01),
+       which read as basically invisible instead of a visible grey. */
+    .archive.teaser #archiveList {
+      position: relative;
+      z-index: 0;
+      opacity: 0.1;
+    }
+
+    .archive.teaser .gap-spacer-square[data-gap="category-list"] {
+      display: none;
+    }
+
+    /* Same element/class as the normal category label (so it's the exact
+       same font, weight, and color as before) - just floated out of its
+       normal spot above the list and blown up to overlay/overflow it
+       instead, in teaser mode only. */
+    .archive.teaser .archive-category-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      z-index: 2;
+      pointer-events: none;
+    }
+
     @media (max-width: 700px) {
 
       :root {
@@ -945,6 +1032,11 @@
 
       .ver2-nav-burger {
         align-self: flex-start;
+      }
+
+      .ver2-wordmark {
+        align-self: center;
+        text-align: center;
       }
 
       .archive-detail-switches {
@@ -1105,6 +1197,16 @@
     body:has(#archiveDetail.visible) #archiveList .archive-item .archive-date,
     body:has(#archiveDetail.visible) #archiveList .archive-item .archive-authors,
     body:has(#archiveDetail.visible) #archiveList .archive-item .archive-number {
+      font-size: 16px;
+    }
+
+    /* The logo and "Archive" header shrink to match, whenever either the
+       archive list (event open) or the About text (/all page teaser
+       revealed, see .about-compact) is at 16px. */
+    body:has(#archiveDetail.visible) .ver2-wordmark,
+    body:has(#archiveDetail.visible) .archive-category-label,
+    body:has(#ver2HeroAbout.about-compact) .ver2-wordmark,
+    body:has(#ver2HeroAbout.about-compact) .archive-category-label {
       font-size: 16px;
     }
 
@@ -1976,6 +2078,7 @@
           <a href="#" data-view="archive" data-i18n="archive">Архив</a>
           <a href="#" data-view="program" data-i18n="program">Программа</a>
           <a href="#" data-view="special-projects" data-i18n="specialProjects">Спецпроекты</a>
+          <a href="#" data-view="all" data-i18n="all">Всё</a>
           <div class="nav-language-group" id="navLanguageGroup"></div>
         </div>
       </div>
@@ -1984,6 +2087,7 @@
         <div class="ver2-hero-about" id="ver2HeroAbout"></div>
       </div>
       <div class="archive" id="archiveView">
+        <button type="button" class="archive-teaser-close" id="archiveTeaserClose">(Close)</button>
         <div class="archive-category-label" id="archiveCategoryLabel"></div>
         <div class="gap-spacer-square gap-spacer-square--block" data-gap="category-list"><span class="gap-spacer-square-label">1</span></div>
         <div class="archive-body">
@@ -2850,6 +2954,10 @@
       btn.addEventListener('click', () => {
         const key = btn.closest('.weights-toggle').dataset.columns;
         updateColumns(key, btn.dataset.columnsValue);
+        // Changing the archive column count doesn't fire a resize event,
+        // but it changes each column's real width the same way one
+        // would - re-measure so has-more/the marquee stay accurate.
+        if (key === 'archiveColumnCount') markAuthorsOverflow();
       });
     });
 
@@ -2860,6 +2968,36 @@
     const ver2HeroAbout = document.getElementById('ver2HeroAbout');
     const archiveView = document.getElementById('archiveView');
     const archiveDetail = document.getElementById('archiveDetail');
+
+    // The /all page's teaser state (faint list + big overlaid "Archive"
+    // label, see .archive.teaser below) - first click just reveals the
+    // real list instead of also opening whatever item happened to be
+    // underneath the click, so this has to run in the capture phase,
+    // before the archive-item's own click handler (bound later, in the
+    // bubble phase) gets a chance to fire.
+    archiveView.addEventListener('click', (e) => {
+      if (!archiveView.classList.contains('teaser')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      archiveView.classList.remove('teaser');
+      // Dedicated class (not a change to .ver2-hero-about itself) so
+      // shrinking the About text here never affects it anywhere else
+      // it's shown (the plain landing page, etc).
+      ver2HeroAbout.classList.add('about-compact');
+    }, true);
+
+    const archiveTeaserClose = document.getElementById('archiveTeaserClose');
+    archiveTeaserClose.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      archiveView.classList.add('teaser');
+      ver2HeroAbout.classList.remove('about-compact');
+    });
+
+    function updateArchiveTeaserCloseLabel() {
+      archiveTeaserClose.textContent = `(${UI_STRINGS.close[currentLang] || UI_STRINGS.close.ru})`;
+    }
+
     const ver2DetailFull = document.getElementById('ver2DetailFull');
 
     document.getElementById('ver2Wordmark').addEventListener('click', (e) => {
@@ -2928,6 +3066,7 @@
       archive: { ru: 'Архив', uz: 'Arxiv', en: 'Archive' },
       program: { ru: 'Программа', uz: 'Dastur', en: 'Program' },
       specialProjects: { ru: 'Спецпроекты', uz: 'Maxsus loyihalar', en: 'Special Projects' },
+      all: { ru: 'Всё', uz: 'Hammasi', en: 'All' },
       info: { ru: 'Инфо', uz: 'Ma\'lumot', en: 'Info' },
       text: { ru: 'Текст', uz: 'Matn', en: 'Text' },
       additionalText: { ru: 'Дополнительный текст', uz: "Qo'shimcha matn", en: 'Additional text' },
@@ -2945,11 +3084,15 @@
       if (parts[0] === 'archive') {
         return { view: 'archive', slug: parts[1] || null };
       }
+      if (parts[0] === 'all') {
+        return { view: 'all', slug: null };
+      }
       return { view: 'ver2', slug: null };
     }
 
     function pathForRoute(view, slug) {
       if (view === 'archive') return slug ? `/archive/${slug}` : '/archive';
+      if (view === 'all') return '/all';
       return '/';
     }
 
@@ -2964,15 +3107,16 @@
     }
 
     function updateCategoryLabel() {
-      const SECTION_VIEW_LABELS = { archive: UI_STRINGS.archive, program: UI_STRINGS.program, 'special-projects': UI_STRINGS.specialProjects };
+      const SECTION_VIEW_LABELS = { archive: UI_STRINGS.archive, all: UI_STRINGS.archive, program: UI_STRINGS.program, 'special-projects': UI_STRINGS.specialProjects };
       const sectionLabel = SECTION_VIEW_LABELS[currentView];
-      document.getElementById('archiveCategoryLabel').textContent = sectionLabel ? sectionLabel[currentLang] || sectionLabel.ru : '';
+      const label = sectionLabel ? sectionLabel[currentLang] || sectionLabel.ru : '';
+      document.getElementById('archiveCategoryLabel').textContent = label;
     }
 
     function setView(view, { scroll = 'smooth' } = {}) {
       currentView = view;
       setNavActiveOnly(navLinksOriginalOrderVer2, view);
-      if (view === 'archive') {
+      if (view === 'archive' || view === 'all') {
         archiveView.classList.add('visible');
         archiveDetail.classList.remove('visible');
         archiveList.querySelectorAll('.archive-item').forEach((el) => el.classList.remove('selected'));
@@ -2981,9 +3125,12 @@
         archiveView.classList.remove('visible');
         archiveDetail.classList.remove('visible');
       }
-      ver2HeroAbout.classList.toggle('visible', view === 'ver2');
+      archiveView.classList.toggle('all-page', view === 'all');
+      archiveView.classList.toggle('teaser', view === 'all');
+      if (view === 'all') ver2HeroAbout.classList.remove('about-compact');
+      ver2HeroAbout.classList.toggle('visible', view === 'ver2' || view === 'all');
       updateCategoryLabel();
-      if (scroll && view !== 'archive') {
+      if (scroll && view !== 'archive' && view !== 'all') {
         ver2Section.scrollIntoView({ behavior: scroll, block: 'start' });
       }
     }
@@ -3158,10 +3305,7 @@
           const authorsArr = (e.authors || []).map(L).filter(Boolean);
           const venueText = L(e.venue);
           const authorsFull = authorsArr.join(', ');
-          const authorsShort = authorsArr.length > 3 ? `${authorsArr.slice(0, 3).join(', ')}…` : authorsFull;
           const partsFull = [authorsFull, venueText].filter(Boolean).join(' — ');
-          const partsShort = [authorsShort, venueText].filter(Boolean).join(' — ');
-          const hasMore = partsFull !== partsShort;
           const active = true;
           const tag = 'a';
           const href = e.slug ? ` href="/archive/${escapeHtml(e.slug)}"` : ` href="#"`;
@@ -3175,14 +3319,12 @@
                 <div class="archive-info">
                   <div class="archive-title">${escapeHtml(L(e.title))}</div>
                   <div class="archive-date">${fmtDate(e.date)}</div>
-                  <div class="archive-authors${hasMore ? ' has-more' : ''}">
-                    <span class="archive-authors-short">${escapeHtml(partsShort)}</span>
-                    ${hasMore ? `
-                      <span class="archive-authors-full">
-                        <span>${escapeHtml(partsFull)}</span>
-                        <span>${escapeHtml(partsFull)}</span>
-                      </span>
-                    ` : ''}
+                  <div class="archive-authors">
+                    <span class="archive-authors-short">${escapeHtml(partsFull)}</span>
+                    <span class="archive-authors-full">
+                      <span>${escapeHtml(partsFull)}</span>
+                      <span>${escapeHtml(partsFull)}</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -3200,8 +3342,33 @@
       });
 
       markColumnEdgeItems();
+      markAuthorsOverflow();
       applyAllSpaceValues();
     }
+
+    // Whether an author list gets truncated + the hover marquee (see
+    // .has-more in CSS) now depends on whether it actually overflows its
+    // real, current column width - not a fixed "more than 3 names" count,
+    // since that width changes with the archive column count (1-4, see
+    // the Columns dev panel), page width, and font size. Always render
+    // the full text in .archive-authors-short (CSS clips it visually via
+    // overflow:hidden/white-space:nowrap); this just measures whether
+    // that clipping is actually happening.
+    function markAuthorsOverflow() {
+      archiveList.querySelectorAll('.archive-authors').forEach((el) => {
+        const shortSpan = el.querySelector('.archive-authors-short');
+        if (!shortSpan) return;
+        el.classList.remove('has-more');
+        // scrollWidth is unreliable on plain inline spans in some engines -
+        // the span's own natural bounding-box width (unaffected by the
+        // parent's overflow:hidden, which only clips painting) compares
+        // cleanly against the parent's actual visible width instead.
+        const overflowing = shortSpan.getBoundingClientRect().width > el.clientWidth + 1;
+        el.classList.toggle('has-more', overflowing);
+      });
+    }
+
+    window.addEventListener('resize', markAuthorsOverflow);
 
     // With CSS multi-column, the browser (not markup order) decides which
     // items start a new column, so it can't be targeted with a plain CSS
@@ -4264,6 +4431,7 @@
       applyUiStrings();
       updateBurgerLabel();
       updateCategoryLabel();
+      updateArchiveTeaserCloseLabel();
       renderAbout();
 
       if (archiveLoaded) {
@@ -4279,6 +4447,7 @@
 
     document.documentElement.lang = currentLang;
     applyUiStrings();
+    updateArchiveTeaserCloseLabel();
     colorizeGapSpacers();
 
     const LANGUAGE_NAMES = { uz: 'Uzbek', ru: 'Russian', en: 'English' };
