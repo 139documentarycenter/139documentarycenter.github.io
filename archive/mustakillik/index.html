@@ -77,49 +77,49 @@
       --page-padding-right: 10px;
       --page-padding-bottom: 10px;
       --page-padding-left: 10px;
-      --site-font-size: 18px;
-      --archive-text-font-size: 18px;
-      --archive-list-font-size: 18px;
+      --site-font-size: 22px;
+      --archive-text-font-size: 22px;
+      --archive-list-font-size: 22px;
       --archive-list-title-font-size: 22px;
-      --archive-list-date-font-size: 16px;
-      --archive-list-author-font-size: 13px;
-      --archive-list-number-font-size: 18px;
-      --space-archive-item-top: 1em;
-      --space-archive-item-bottom: 1em;
-      --space-archive-item-left: 1em;
+      --archive-list-date-font-size: 22px;
+      --archive-list-author-font-size: 22px;
+      --archive-list-number-font-size: 22px;
+      --space-archive-item-top: 0.25em;
+      --space-archive-item-bottom: 0.25em;
+      --space-archive-item-left: 0.25em;
       --space-archive-number-info: 1em;
       --space-archive-column-gap: 1em;
       --space-archive-category-list: 1em;
-      --space-event-list-header: 1em;
-      --space-event-header-filter: 1em;
-      --space-event-filter-content: 1em;
+      --space-event-list-header: 1.5em;
+      --space-event-header-filter: 0.75em;
+      --space-event-filter-content: 1.5em;
       --space-event-label-text: 1em;
       --space-event-label-stack: 1em;
       --space-event-text-columns: 1.5em;
       --space-gallery-image: 1em;
-      --space-gallery-row: 1em;
-      --space-gallery-block: 1em;
+      --space-gallery-row: 5.75em;
+      --space-gallery-block: 5.75em;
       --gallery-column-height: 90vh;
-      --weight-body: bold;
+      --weight-body: normal;
       --weight-archive-list: normal;
-      --weight-nav: bold;
-      --weight-event-title: bold;
-      --weight-event-label: bold;
-      --weight-event-body: bold;
-      --weight-gallery-caption: bold;
-      --archive-column-count: 3;
+      --weight-nav: normal;
+      --weight-event-title: normal;
+      --weight-event-label: normal;
+      --weight-event-body: normal;
+      --weight-gallery-caption: normal;
+      --archive-column-count: 4;
       --event-text-line-height: var(--site-line-height);
-      --content-panel-header-font-size: var(--archive-text-font-size);
-      --event-text-letter-spacing: var(--site-letter-spacing);
-      --gallery-title-font-size-desktop: 18px;
-      --gallery-title-font-size-mobile: 18px;
-      --gallery-image-height: 25vh;
-      --gallery-horizontal-image-height: 50vh;
-      --nav-font-size: 18px;
-      --archive-tabs-font-size: 18px;
-      --site-line-height: 1.3;
+      --content-panel-header-font-size: 16px;
+      --event-text-letter-spacing: 0.4px;
+      --gallery-title-font-size-desktop: 16px;
+      --gallery-title-font-size-mobile: 16px;
+      --gallery-image-height: 30vh;
+      --gallery-horizontal-image-height: 80vh;
+      --nav-font-size: 22px;
+      --archive-tabs-font-size: 22px;
+      --site-line-height: 1.2;
       --nav-content-gap: calc(var(--site-line-height) * 1em);
-      --site-letter-spacing: 1px;
+      --site-letter-spacing: 0.35px;
       --site-bg: #ffffff;
       --site-color: #000000;
       --color-about: #000000;
@@ -2486,16 +2486,16 @@
   <div class="dev-panel" id="devPanel">
     <h4>General</h4>
     <label>
-      <span><span>Text size (px)</span><span id="siteFontSizeVal">18</span></span>
-      <input type="range" id="siteFontSize" min="10" max="36" step="1" value="18">
+      <span><span>Text size (px)</span><span id="siteFontSizeVal">22</span></span>
+      <input type="range" id="siteFontSize" min="10" max="36" step="1" value="22">
     </label>
     <label>
-      <span><span>Line height</span><span id="siteLineHeightVal">1.30</span></span>
-      <input type="range" id="siteLineHeight" min="0.9" max="2" step="0.05" value="1.3">
+      <span><span>Line height</span><span id="siteLineHeightVal">1.2</span></span>
+      <input type="range" id="siteLineHeight" min="0.9" max="2" step="0.05" value="1.2">
     </label>
     <label>
-      <span><span>Letter spacing (px)</span><span id="siteLetterSpacingVal">1.00</span></span>
-      <input type="range" id="siteLetterSpacing" min="-1" max="4" step="0.05" value="1">
+      <span><span>Letter spacing (px)</span><span id="siteLetterSpacingVal">0.35</span></span>
+      <input type="range" id="siteLetterSpacing" min="-1" max="4" step="0.05" value="0.35">
     </label>
     <label>
       <span><span>Page padding top (px)</span><span id="pagePaddingTopVal">8</span></span>
@@ -2516,68 +2516,68 @@
 
     <h4>Nav</h4>
     <label>
-      <span><span>Nav text size (px)</span><span id="navFontSizeVal">18</span></span>
-      <input type="range" id="navFontSize" min="10" max="36" step="1" value="18">
+      <span><span>Nav text size (px)</span><span id="navFontSizeVal">22</span></span>
+      <input type="range" id="navFontSize" min="10" max="36" step="1" value="22">
     </label>
 
     <h4>Archive list</h4>
     <label>
-      <span><span>Archive list text size (px)</span><span id="archiveListFontSizeVal">18</span></span>
-      <input type="range" id="archiveListFontSize" min="10" max="36" step="1" value="18">
+      <span><span>Archive list text size (px)</span><span id="archiveListFontSizeVal">22</span></span>
+      <input type="range" id="archiveListFontSize" min="10" max="36" step="1" value="22">
     </label>
     <label>
       <span><span>Archive list title size (px)</span><span id="archiveListTitleFontSizeVal">22</span></span>
       <input type="range" id="archiveListTitleFontSize" min="8" max="48" step="1" value="22">
     </label>
     <label>
-      <span><span>Archive list date size (px)</span><span id="archiveListDateFontSizeVal">16</span></span>
-      <input type="range" id="archiveListDateFontSize" min="8" max="48" step="1" value="16">
+      <span><span>Archive list date size (px)</span><span id="archiveListDateFontSizeVal">22</span></span>
+      <input type="range" id="archiveListDateFontSize" min="8" max="48" step="1" value="22">
     </label>
     <label>
-      <span><span>Archive list author size (px)</span><span id="archiveListAuthorFontSizeVal">13</span></span>
-      <input type="range" id="archiveListAuthorFontSize" min="8" max="48" step="1" value="13">
+      <span><span>Archive list author size (px)</span><span id="archiveListAuthorFontSizeVal">22</span></span>
+      <input type="range" id="archiveListAuthorFontSize" min="8" max="48" step="1" value="22">
     </label>
     <label>
-      <span><span>Archive list number size (px)</span><span id="archiveListNumberFontSizeVal">18</span></span>
-      <input type="range" id="archiveListNumberFontSize" min="8" max="48" step="1" value="18">
+      <span><span>Archive list number size (px)</span><span id="archiveListNumberFontSizeVal">22</span></span>
+      <input type="range" id="archiveListNumberFontSize" min="8" max="48" step="1" value="22">
     </label>
 
     <h4>Event</h4>
     <label>
-      <span><span>Archive text size (px)</span><span id="archiveTextFontSizeVal">18</span></span>
-      <input type="range" id="archiveTextFontSize" min="10" max="36" step="1" value="18">
+      <span><span>Archive text size (px)</span><span id="archiveTextFontSizeVal">22</span></span>
+      <input type="range" id="archiveTextFontSize" min="10" max="36" step="1" value="22">
     </label>
     <label>
-      <span><span>Text line height</span><span id="eventTextLineHeightVal">1.30</span></span>
-      <input type="range" id="eventTextLineHeight" min="0.9" max="2" step="0.05" value="1.3">
+      <span><span>Text line height</span><span id="eventTextLineHeightVal">1.2</span></span>
+      <input type="range" id="eventTextLineHeight" min="0.9" max="2" step="0.05" value="1.2">
     </label>
     <label>
-      <span><span>Text letter spacing (px)</span><span id="eventTextLetterSpacingVal">1.00</span></span>
-      <input type="range" id="eventTextLetterSpacing" min="-1" max="4" step="0.05" value="1">
+      <span><span>Text letter spacing (px)</span><span id="eventTextLetterSpacingVal">0.4</span></span>
+      <input type="range" id="eventTextLetterSpacing" min="-1" max="4" step="0.05" value="0.4">
     </label>
     <label>
-      <span><span>Text label size (px)</span><span id="contentPanelHeaderFontSizeVal">18</span></span>
-      <input type="range" id="contentPanelHeaderFontSize" min="8" max="48" step="1" value="18">
+      <span><span>Text label size (px)</span><span id="contentPanelHeaderFontSizeVal">16</span></span>
+      <input type="range" id="contentPanelHeaderFontSize" min="8" max="48" step="1" value="16">
     </label>
     <label>
-      <span><span>Text/Images switch + Close size (px)</span><span id="archiveTabsFontSizeVal">18</span></span>
-      <input type="range" id="archiveTabsFontSize" min="10" max="36" step="1" value="18">
+      <span><span>Text/Images switch + Close size (px)</span><span id="archiveTabsFontSizeVal">22</span></span>
+      <input type="range" id="archiveTabsFontSize" min="10" max="36" step="1" value="22">
     </label>
     <label>
-      <span><span>Gallery title size desktop (px)</span><span id="galleryTitleFontSizeDesktopVal">18</span></span>
-      <input type="range" id="galleryTitleFontSizeDesktop" min="10" max="36" step="1" value="18">
+      <span><span>Gallery title size desktop (px)</span><span id="galleryTitleFontSizeDesktopVal">16</span></span>
+      <input type="range" id="galleryTitleFontSizeDesktop" min="10" max="36" step="1" value="16">
     </label>
     <label>
-      <span><span>Gallery title size mobile (px)</span><span id="galleryTitleFontSizeMobileVal">18</span></span>
-      <input type="range" id="galleryTitleFontSizeMobile" min="10" max="36" step="1" value="18">
+      <span><span>Gallery title size mobile (px)</span><span id="galleryTitleFontSizeMobileVal">16</span></span>
+      <input type="range" id="galleryTitleFontSizeMobile" min="10" max="36" step="1" value="16">
     </label>
     <label>
-      <span><span>Gallery image height (vh, desktop)</span><span id="galleryImageHeightVal">25</span></span>
-      <input type="range" id="galleryImageHeight" min="5" max="60" step="1" value="25">
+      <span><span>Gallery image height (vh, desktop)</span><span id="galleryImageHeightVal">30</span></span>
+      <input type="range" id="galleryImageHeight" min="5" max="60" step="1" value="30">
     </label>
     <label>
-      <span><span>Gallery horizontal image height (vh)</span><span id="galleryHorizontalImageHeightVal">50</span></span>
-      <input type="range" id="galleryHorizontalImageHeight" min="10" max="100" step="1" value="50">
+      <span><span>Gallery horizontal image height (vh)</span><span id="galleryHorizontalImageHeightVal">80</span></span>
+      <input type="range" id="galleryHorizontalImageHeight" min="10" max="100" step="1" value="80">
     </label>
     <label>
       <span><span>Gallery column height (vh)</span><span id="galleryColumnHeightVal">90</span></span>
@@ -2595,7 +2595,7 @@
       <span class="spaces-row-label">Row top padding</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="itemTop">−</button>
-        <span class="spaces-stepper-value" id="spaceItemTopVal">1</span>
+        <span class="spaces-stepper-value" id="spaceItemTopVal">0.25</span>
         <button type="button" data-space-step="1" data-space="itemTop">+</button>
       </span>
     </div>
@@ -2603,7 +2603,7 @@
       <span class="spaces-row-label">Row bottom padding</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="itemBottom">−</button>
-        <span class="spaces-stepper-value" id="spaceItemBottomVal">1</span>
+        <span class="spaces-stepper-value" id="spaceItemBottomVal">0.25</span>
         <button type="button" data-space-step="1" data-space="itemBottom">+</button>
       </span>
     </div>
@@ -2611,7 +2611,7 @@
       <span class="spaces-row-label">Left padding before number</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="itemLeft">−</button>
-        <span class="spaces-stepper-value" id="spaceItemLeftVal">1</span>
+        <span class="spaces-stepper-value" id="spaceItemLeftVal">0.25</span>
         <button type="button" data-space-step="1" data-space="itemLeft">+</button>
       </span>
     </div>
@@ -2645,7 +2645,7 @@
       <span class="spaces-row-label">List → header gap</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="listHeader">−</button>
-        <span class="spaces-stepper-value" id="spaceListHeaderVal">1</span>
+        <span class="spaces-stepper-value" id="spaceListHeaderVal">1.5</span>
         <button type="button" data-space-step="1" data-space="listHeader">+</button>
       </span>
     </div>
@@ -2653,7 +2653,7 @@
       <span class="spaces-row-label">Header → filter gap</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="headerFilter">−</button>
-        <span class="spaces-stepper-value" id="spaceHeaderFilterVal">1</span>
+        <span class="spaces-stepper-value" id="spaceHeaderFilterVal">0.75</span>
         <button type="button" data-space-step="1" data-space="headerFilter">+</button>
       </span>
     </div>
@@ -2661,7 +2661,7 @@
       <span class="spaces-row-label">Filter → content gap</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="filterContent">−</button>
-        <span class="spaces-stepper-value" id="spaceFilterContentVal">1</span>
+        <span class="spaces-stepper-value" id="spaceFilterContentVal">1.5</span>
         <button type="button" data-space-step="1" data-space="filterContent">+</button>
       </span>
     </div>
@@ -2703,7 +2703,7 @@
       <span class="spaces-row-label">Row gap</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="galleryRow">−</button>
-        <span class="spaces-stepper-value" id="spaceGalleryRowVal">1</span>
+        <span class="spaces-stepper-value" id="spaceGalleryRowVal">5.75</span>
         <button type="button" data-space-step="1" data-space="galleryRow">+</button>
       </span>
     </div>
@@ -2711,7 +2711,7 @@
       <span class="spaces-row-label">Block gap</span>
       <span class="spaces-stepper">
         <button type="button" data-space-step="-1" data-space="galleryBlock">−</button>
-        <span class="spaces-stepper-value" id="spaceGalleryBlockVal">1</span>
+        <span class="spaces-stepper-value" id="spaceGalleryBlockVal">5.75</span>
         <button type="button" data-space-step="1" data-space="galleryBlock">+</button>
       </span>
     </div>
@@ -2830,21 +2830,21 @@
     });
 
     const SPACE_CONFIGS = {
-      itemTop: { cssVar: '--space-archive-item-top', dataGap: 'item-top', valEl: 'spaceItemTopVal', unit: 'em', step: 0.25, default: 1 },
-      itemBottom: { cssVar: '--space-archive-item-bottom', dataGap: 'item-bottom', valEl: 'spaceItemBottomVal', unit: 'em', step: 0.25, default: 1 },
-      itemLeft: { cssVar: '--space-archive-item-left', dataGap: 'item-left', valEl: 'spaceItemLeftVal', unit: 'em', step: 0.25, default: 1 },
+      itemTop: { cssVar: '--space-archive-item-top', dataGap: 'item-top', valEl: 'spaceItemTopVal', unit: 'em', step: 0.25, default: 0.25 },
+      itemBottom: { cssVar: '--space-archive-item-bottom', dataGap: 'item-bottom', valEl: 'spaceItemBottomVal', unit: 'em', step: 0.25, default: 0.25 },
+      itemLeft: { cssVar: '--space-archive-item-left', dataGap: 'item-left', valEl: 'spaceItemLeftVal', unit: 'em', step: 0.25, default: 0.25 },
       numberInfo: { cssVar: '--space-archive-number-info', dataGap: 'number-info', valEl: 'spaceNumberInfoVal', unit: 'em', step: 0.25, default: 1 },
       columnGap: { cssVar: '--space-archive-column-gap', dataGap: 'column-gap', valEl: 'spaceColumnGapVal', unit: 'em', step: 0.25, default: 1 },
       categoryList: { cssVar: '--space-archive-category-list', dataGap: 'category-list', valEl: 'spaceCategoryListVal', unit: 'em', step: 0.25, default: 1 },
-      listHeader: { cssVar: '--space-event-list-header', dataGap: 'list-header', valEl: 'spaceListHeaderVal', unit: 'em', step: 0.25, default: 1 },
-      headerFilter: { cssVar: '--space-event-header-filter', dataGap: 'header-filter', valEl: 'spaceHeaderFilterVal', unit: 'em', step: 0.25, default: 1 },
-      filterContent: { cssVar: '--space-event-filter-content', dataGap: 'filter-content', valEl: 'spaceFilterContentVal', unit: 'em', step: 0.25, default: 1 },
+      listHeader: { cssVar: '--space-event-list-header', dataGap: 'list-header', valEl: 'spaceListHeaderVal', unit: 'em', step: 0.25, default: 1.5 },
+      headerFilter: { cssVar: '--space-event-header-filter', dataGap: 'header-filter', valEl: 'spaceHeaderFilterVal', unit: 'em', step: 0.25, default: 0.75 },
+      filterContent: { cssVar: '--space-event-filter-content', dataGap: 'filter-content', valEl: 'spaceFilterContentVal', unit: 'em', step: 0.25, default: 1.5 },
       labelText: { cssVar: '--space-event-label-text', dataGap: 'label-text', valEl: 'spaceLabelTextVal', unit: 'em', step: 0.25, default: 1 },
       labelStack: { cssVar: '--space-event-label-stack', dataGap: 'label-stack', valEl: 'spaceLabelStackVal', unit: 'em', step: 0.25, default: 1 },
       textColumns: { cssVar: '--space-event-text-columns', dataGap: 'text-columns', valEl: 'spaceTextColumnsVal', unit: 'em', step: 0.25, default: 1.5 },
       galleryImage: { cssVar: '--space-gallery-image', dataGap: 'gallery-image', valEl: 'spaceGalleryImageVal', unit: 'em', step: 0.25, default: 1 },
-      galleryRow: { cssVar: '--space-gallery-row', dataGap: 'gallery-row', valEl: 'spaceGalleryRowVal', unit: 'em', step: 0.25, default: 1 },
-      galleryBlock: { cssVar: '--space-gallery-block', dataGap: 'gallery-block', valEl: 'spaceGalleryBlockVal', unit: 'em', step: 0.25, default: 1 },
+      galleryRow: { cssVar: '--space-gallery-row', dataGap: 'gallery-row', valEl: 'spaceGalleryRowVal', unit: 'em', step: 0.25, default: 5.75 },
+      galleryBlock: { cssVar: '--space-gallery-block', dataGap: 'gallery-block', valEl: 'spaceGalleryBlockVal', unit: 'em', step: 0.25, default: 5.75 },
     };
 
     const spaceValues = {};
@@ -2921,13 +2921,13 @@
     });
 
     const WEIGHT_CONFIGS = {
-      body: { cssVar: '--weight-body', default: 'bold' },
+      body: { cssVar: '--weight-body', default: 'normal' },
       archiveList: { cssVar: '--weight-archive-list', default: 'normal' },
-      nav: { cssVar: '--weight-nav', default: 'bold' },
-      eventTitle: { cssVar: '--weight-event-title', default: 'bold' },
-      eventLabel: { cssVar: '--weight-event-label', default: 'bold' },
-      eventBody: { cssVar: '--weight-event-body', default: 'bold' },
-      galleryCaption: { cssVar: '--weight-gallery-caption', default: 'bold' },
+      nav: { cssVar: '--weight-nav', default: 'normal' },
+      eventTitle: { cssVar: '--weight-event-title', default: 'normal' },
+      eventLabel: { cssVar: '--weight-event-label', default: 'normal' },
+      eventBody: { cssVar: '--weight-event-body', default: 'normal' },
+      galleryCaption: { cssVar: '--weight-gallery-caption', default: 'normal' },
     };
 
     const weightValues = {};
@@ -2990,7 +2990,7 @@
 
     const COLUMNS_CONFIGS = {
       archiveColumnCount: {
-        default: '3',
+        default: '4',
         apply: (value) => document.documentElement.style.setProperty('--archive-column-count', value),
       },
       eventTextLayout: {
