@@ -481,8 +481,8 @@
     .archive-detail-identity-row {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
+      align-items: flex-start;
+      text-align: left;
       width: 100%;
       font-weight: var(--weight-event-title);
     }
@@ -490,7 +490,7 @@
     .archive-detail-identity-row .archive-item {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       cursor: default;
     }
 
@@ -535,7 +535,7 @@
       position: relative;
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       gap: 20px;
       width: 100%;
@@ -855,7 +855,7 @@
     .content-text-row {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       width: 100%;
       background: var(--bg-event-text);
     }
@@ -984,15 +984,6 @@
       overflow: visible;
     }
 
-    /* On .archive-body, not .archive itself - .archive's own box extends
-       to the true page edge (its left/right padding is what creates the
-       page margin), so a border there would bleed past where the content
-       actually starts/ends. .archive-body sits inside that padding
-       already, so its width naturally matches the padded content area. */
-    .archive.teaser:hover .archive-body {
-      border-bottom: 1px solid #000;
-    }
-
     /* Only #archiveList itself, not its .archive-body ancestor too - two
        nested opacity:0.1's compound multiplicatively (0.1 x 0.1 = 0.01),
        which read as basically invisible instead of a visible grey. */
@@ -1018,6 +1009,42 @@
       white-space: nowrap;
       z-index: 2;
       pointer-events: none;
+    }
+
+    /* On hover, swap the emphasis: the list comes forward at full
+       strength, the "Archive" label recedes behind it and turns grey. */
+    .archive.teaser:hover #archiveList {
+      opacity: 1;
+    }
+
+    /* Once an event is open (see #archiveDetailAll.visible), the list
+       collapses to a single centered column instead of its normal full-
+       width columns - a small grey backdrop behind the open event rather
+       than the whole page's worth of content competing for attention. */
+    body:has(#archiveDetailAll.visible) .archive.teaser .archive-body {
+      display: flex;
+      justify-content: center;
+    }
+
+    body:has(#archiveDetailAll.visible) .archive.teaser #archiveList {
+      column-count: 1;
+      width: fit-content;
+      /* Stays fully visible/active with an event open - no need to fade
+         it out just because it's now a backdrop, the underline on the
+         selected item is enough to show what's open (see .selected::after
+         below). */
+      opacity: 1;
+    }
+
+    /* No close button on the /all page's event detail - the archive list
+       itself (still visible, active, behind it) is the way back. */
+    #archiveDetailAll .detail-close {
+      display: none;
+    }
+
+    .archive.teaser:hover .archive-category-label {
+      z-index: -1;
+      color: #999999;
     }
 
     @media (max-width: 700px) {
@@ -1180,35 +1207,42 @@
     }
 
     /* Shrinks the whole list once an event is open, reverting the moment
-       it's closed (#archiveDetail loses .visible) - pure CSS, no JS state
-       to keep in sync since :has() reacts to the class directly. #archiveDetail
-       and #archiveList aren't in the same subtree (the detail view lives
-       under #ver2DetailFull, the list under #archiveView), so this has to
-       scope from body rather than a shared closer ancestor. Title/date/
-       author/number each carry their own independent font-size var (see
-       the dev panel controls for them), overriding whatever #archiveList
-       itself is set to - so this has to override each of those directly,
-       not just the shared parent. */
-    body:has(#archiveDetail.visible) #archiveList {
+       it's closed (#archiveDetail/#archiveDetailAll loses .visible) - pure
+       CSS, no JS state to keep in sync since :has() reacts to the class
+       directly. Neither detail container shares a subtree with #archiveList
+       (the detail views live under #ver2DetailFull/#ver2DetailFullAll, the
+       list under #archiveView), so this has to scope from body rather than
+       a shared closer ancestor. #archiveDetailAll is the /all page's
+       duplicate detail container (see selectEvent()). Title/date/author/
+       number each carry their own independent font-size var (see the dev
+       panel controls for them), overriding whatever #archiveList itself is
+       set to - so this has to override each of those directly, not just
+       the shared parent. */
+    body:has(#archiveDetail.visible) #archiveList,
+    body:has(#archiveDetailAll.visible) #archiveList {
       font-size: 16px;
     }
 
     body:has(#archiveDetail.visible) #archiveList .archive-item .archive-title,
     body:has(#archiveDetail.visible) #archiveList .archive-item .archive-date,
     body:has(#archiveDetail.visible) #archiveList .archive-item .archive-authors,
-    body:has(#archiveDetail.visible) #archiveList .archive-item .archive-number {
+    body:has(#archiveDetail.visible) #archiveList .archive-item .archive-number,
+    body:has(#archiveDetailAll.visible) #archiveList .archive-item .archive-title,
+    body:has(#archiveDetailAll.visible) #archiveList .archive-item .archive-date,
+    body:has(#archiveDetailAll.visible) #archiveList .archive-item .archive-authors,
+    body:has(#archiveDetailAll.visible) #archiveList .archive-item .archive-number {
       font-size: 16px;
     }
 
-    /* The logo and "Archive" header shrink to match, whenever either the
-       archive list (event open) or the About text (/all page teaser
-       revealed, see .about-compact) is at 16px. */
     body:has(#archiveDetail.visible) .ver2-wordmark,
     body:has(#archiveDetail.visible) .archive-category-label,
+    body:has(#archiveDetailAll.visible) .ver2-wordmark,
+    body:has(#archiveDetailAll.visible) .archive-category-label,
     body:has(#ver2HeroAbout.about-compact) .ver2-wordmark,
     body:has(#ver2HeroAbout.about-compact) .archive-category-label {
       font-size: 16px;
     }
+
 
     /* Positioned relative to .archive-list-col (see below), NOT
        #archiveList itself - Chrome positions absolutely-positioned
@@ -1439,6 +1473,12 @@
       display: none;
     }
 
+    /* Experiment scoped to the /all page only (see .all-page in setView())
+       - the regular /archive route keeps its row dividers. */
+    .archive.all-page #archiveList .archive-item::after {
+      display: none;
+    }
+
     #archiveList .archive-item:hover::before {
       content: '';
       position: absolute;
@@ -1459,6 +1499,37 @@
     #archiveList .archive-item:hover .archive-authors,
     #archiveList .archive-item:hover .archive-number {
       color: #000;
+    }
+
+    /* /all-only experiment (see .all-page in setView()) - bottom-border
+       emphasis instead of the grey background fill above. */
+    .archive.all-page #archiveList .archive-item:hover::before {
+      background: transparent;
+    }
+
+    .archive.all-page #archiveList .archive-item:hover .archive-title,
+    .archive.all-page #archiveList .archive-item:hover .archive-date,
+    .archive.all-page #archiveList .archive-item:hover .archive-authors,
+    .archive.all-page #archiveList .archive-item:hover .archive-number {
+      color: inherit;
+    }
+
+    /* Full-bleed version instead (see #archiveItemUnderline) - the
+       per-item ::after line stays hidden (display:none, see the base
+       .archive.all-page rule above) on /all. */
+    .archive-item-underline {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--color-archive);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .archive-item-underline.visible {
+      display: block;
     }
 
     #archiveList .archive-item .archive-title {
@@ -2088,6 +2159,11 @@
       </div>
       <div class="archive" id="archiveView">
         <button type="button" class="archive-teaser-close" id="archiveTeaserClose">(Close)</button>
+        <!-- /all-only (see .archive.all-page) - a single shared full-bleed
+             line, repositioned via JS to sit under whichever archive-item
+             is hovered/selected (see updateArchiveItemUnderline), instead
+             of a border scoped to that item's own (column-width) box. -->
+        <div class="archive-item-underline" id="archiveItemUnderline"></div>
         <div class="archive-category-label" id="archiveCategoryLabel"></div>
         <div class="gap-spacer-square gap-spacer-square--block" data-gap="category-list"><span class="gap-spacer-square-label">1</span></div>
         <div class="archive-body">
@@ -2379,6 +2455,15 @@
       
     </div>
   
+        </div>
+      </div>
+      <!-- Duplicate of #ver2DetailFull/#archiveDetail above, only ever
+           shown on the /all page (see selectEvent()'s currentView branch)
+           - a separate DOM subtree so CSS/JS experiments here can't touch
+           the real /archive event detail. -->
+      <div class="ver2-detail-full" id="ver2DetailFullAll">
+        <div class="content-container" id="archiveDetailAll">
+          <div class="archive-detail-placeholder">Select an event to view details.</div>
         </div>
       </div>
     </div>
@@ -2968,6 +3053,10 @@
     const ver2HeroAbout = document.getElementById('ver2HeroAbout');
     const archiveView = document.getElementById('archiveView');
     const archiveDetail = document.getElementById('archiveDetail');
+    // Duplicate of archiveDetail, only ever used on the /all page (see
+    // selectEvent()) - a separate container so /all-specific experiments
+    // don't touch the real /archive event detail.
+    const archiveDetailAll = document.getElementById('archiveDetailAll');
 
     // The /all page's teaser state (faint list + big overlaid "Archive"
     // label, see .archive.teaser below) - first click just reveals the
@@ -2977,8 +3066,22 @@
     // bubble phase) gets a chance to fire.
     archiveView.addEventListener('click', (e) => {
       if (!archiveView.classList.contains('teaser')) return;
+      // Clicking an item goes straight to opening that event - no
+      // separate "reveal the full list" step first. The teaser class
+      // stays on (see .archive.teaser CSS), so the list stays grey/
+      // centered as a backdrop instead of un-fading to full opacity.
+      if (e.target.closest('.archive-item')) return;
       e.preventDefault();
       e.stopPropagation();
+      // An event is already open (no close button there - see
+      // #archiveDetailAll .detail-close) - clicking the grey backdrop
+      // closes it instead of revealing the full list.
+      if (archiveDetailAll.classList.contains('visible')) {
+        archiveDetailAll.classList.remove('visible');
+        archiveList.querySelectorAll('.archive-item').forEach((el) => el.classList.remove('selected'));
+        positionArchiveItemUnderline(null);
+        return;
+      }
       archiveView.classList.remove('teaser');
       // Dedicated class (not a change to .ver2-hero-about itself) so
       // shrinking the About text here never affects it anywhere else
@@ -3009,6 +3112,49 @@
     });
     const archiveLoading = document.getElementById('archiveLoading');
     const archiveList = document.getElementById('archiveList');
+
+    // /all-only (see .archive.all-page) - a single shared full-bleed line
+    // repositioned to sit under whichever item is hovered/selected,
+    // instead of a border scoped to that item's own (column-width) box.
+    // #archiveItemUnderline is a direct child of #archiveView, which is
+    // itself position:relative with its own left/right padding equal to
+    // the page padding - so left:0/right:0 on the line (see CSS) already
+    // lands exactly at the page edges without extra math.
+    const archiveItemUnderline = document.getElementById('archiveItemUnderline');
+
+    function positionArchiveItemUnderline(item) {
+      if (!archiveView.classList.contains('all-page') || !item) {
+        archiveItemUnderline.classList.remove('visible');
+        return;
+      }
+      const itemRect = item.getBoundingClientRect();
+      const containerRect = archiveView.getBoundingClientRect();
+      archiveItemUnderline.style.top = `${itemRect.bottom - containerRect.top}px`;
+      archiveItemUnderline.classList.add('visible');
+    }
+
+    // Hovering an item takes priority; moving off it falls back to
+    // whichever item is currently selected (the open event), if any -
+    // matching how .selected used to keep its own line lit even when not
+    // hovered.
+    archiveList.addEventListener('mouseover', (e) => {
+      const item = e.target.closest('.archive-item');
+      if (item) positionArchiveItemUnderline(item);
+    });
+
+    archiveList.addEventListener('mouseout', (e) => {
+      const item = e.target.closest('.archive-item');
+      if (!item) return;
+      const selected = archiveList.querySelector('.archive-item.selected');
+      positionArchiveItemUnderline(selected);
+    });
+
+    window.addEventListener('resize', () => {
+      const hovered = archiveList.querySelector('.archive-item:hover');
+      const selected = archiveList.querySelector('.archive-item.selected');
+      positionArchiveItemUnderline(hovered || selected);
+    });
+
     const navStaticVer2 = document.getElementById('navStaticVer2');
     const navLinksOriginalOrderVer2 = Array.from(navStaticVer2.children);
 
@@ -3119,11 +3265,13 @@
       if (view === 'archive' || view === 'all') {
         archiveView.classList.add('visible');
         archiveDetail.classList.remove('visible');
+        archiveDetailAll.classList.remove('visible');
         archiveList.querySelectorAll('.archive-item').forEach((el) => el.classList.remove('selected'));
         if (!archiveLoaded) loadArchive();
       } else {
         archiveView.classList.remove('visible');
         archiveDetail.classList.remove('visible');
+        archiveDetailAll.classList.remove('visible');
       }
       archiveView.classList.toggle('all-page', view === 'all');
       archiveView.classList.toggle('teaser', view === 'all');
@@ -3839,6 +3987,11 @@
       if (!e) return;
 
       const isMobile = window.matchMedia('(max-width: 700px)').matches;
+      // /all uses its own duplicate container (see #archiveDetailAll)
+      // instead of the real /archive one, so experiments there can't leak
+      // into the regular event detail.
+      const onAll = currentView === 'all';
+      const detailEl = onAll ? archiveDetailAll : archiveDetail;
 
       // Land at the top so opening an event always starts from a
       // deliberate, predictable scroll position. On mobile, scroll to the
@@ -3851,8 +4004,9 @@
       archiveList.querySelectorAll('.archive-item').forEach((el) => {
         el.classList.toggle('selected', Number(el.dataset.index) === index);
       });
+      positionArchiveItemUnderline(archiveList.querySelector('.archive-item.selected'));
 
-      if (updateUrl && e.slug) {
+      if (updateUrl && e.slug && !onAll) {
         const path = pathForRoute('archive', e.slug);
         if (location.pathname !== path) {
           history.pushState({ view: 'archive', slug: e.slug }, '', path);
@@ -3860,15 +4014,16 @@
       }
 
       const uid = String(index);
-      archiveDetail.innerHTML = buildEventDetailHtml(e, uid);
-      wireEventDetailBlocks(archiveDetail, { [uid]: e });
+      detailEl.innerHTML = buildEventDetailHtml(e, uid);
+      wireEventDetailBlocks(detailEl, { [uid]: e });
       colorizeGapSpacers();
       applyAllSpaceValues();
 
-      archiveDetail.querySelector('.detail-close').addEventListener('click', (evt) => {
+      detailEl.querySelector('.detail-close').addEventListener('click', (evt) => {
         evt.preventDefault();
         archiveList.querySelectorAll('.archive-item').forEach((el) => el.classList.remove('selected'));
-        archiveDetail.classList.remove('visible');
+        detailEl.classList.remove('visible');
+        if (onAll) return;
         // Update the URL/history directly instead of calling navigate()/setView(),
         // which would hide the detail immediately.
         currentView = 'archive';
@@ -3878,10 +4033,10 @@
         }
       });
 
-      archiveDetail.classList.add('visible');
+      detailEl.classList.add('visible');
 
       if (isMobile) {
-        const targetY = window.scrollY + archiveDetail.getBoundingClientRect().top - 29;
+        const targetY = window.scrollY + detailEl.getBoundingClientRect().top - 29;
         window.scrollTo({ top: targetY, behavior: 'smooth' });
       }
     }
